@@ -303,9 +303,9 @@ function Shell() {
       <footer style={styles.footer}>
         <div style={styles.footerContainer}>
           <div style={styles.footerBrandCol}>
-            <span style={styles.footerBrandName}>TOTAL FLOW</span>
-            <span style={styles.footerEngineName}>TOTALFLOW Compliance Intelligence Engine</span>
-            <span style={styles.footerPlatform}>Semantic Reasoning Research Platform</span>
+            <span style={styles.footerBrandName}>totalflow</span>
+            <span style={styles.footerEngineName}>Financial Document Verification Engine</span>
+            <span style={styles.footerPlatform}>VSUAL PIPELINE</span>
           </div>
           <div style={styles.footerRightCol}>
             <span style={styles.footerProgramme}>Research Programme • R&amp;D 2025</span>
