@@ -1,0 +1,204 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: R&D
+      - generic [ref=e7]:
+        - generic [ref=e8]: Financial Document Verification
+        - generic [ref=e9]: VISUAL PIPELINE · JULY 2026 · 04
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: Generated
+        - generic [ref=e13]: 22/07/2026 22:13:24
+      - generic [ref=e14]:
+        - generic [ref=e15]: Locale
+        - generic [ref=e16]: en-AU
+      - generic [ref=e20]: In-memory
+  - tablist [ref=e21]:
+    - tab "01 — Capture & OCR Upload Receipt" [ref=e22] [cursor=pointer]:
+      - generic [ref=e23]: 01 — Capture & OCR
+      - generic [ref=e24]: Upload Receipt
+    - tab "02 — Compose & configure Build Pipeline" [active] [ref=e25] [cursor=pointer]:
+      - generic [ref=e26]: 02 — Compose & configure
+      - generic [ref=e27]: Build Pipeline
+    - tab "03 — Review & export View Expense Map" [ref=e28] [cursor=pointer]:
+      - generic [ref=e29]: 03 — Review & export
+      - generic [ref=e30]: View Expense Map
+  - main [ref=e31]:
+    - generic [ref=e707]:
+      - generic [ref=e708]:
+        - generic [ref=e709]: Step 02 — Compose & Configure
+        - heading "Build the pipeline" [level=2] [ref=e710]
+        - paragraph [ref=e711]: Drag modules from the toolbox onto the canvas, wire them together, and tune the parameters of each node. Load the preset chain for a working baseline or assemble your own verification flow.
+      - generic [ref=e712]:
+        - generic [ref=e713]:
+          - generic [ref=e714]:
+            - generic [ref=e715]: STEP 03 — TOOLBOX
+            - heading "Modules" [level=3] [ref=e716]
+            - paragraph [ref=e717]: Drag a module onto the canvas, or click to add. Connect handles to wire the chain.
+          - button "Load preset chain" [ref=e719]:
+            - generic [ref=e720]: Load preset chain
+          - generic [ref=e721]:
+            - generic [ref=e722]:
+              - generic [ref=e724]: Input
+              - generic [ref=e725]: "1"
+            - button "Receipt Data Input" [ref=e726]:
+              - generic [ref=e728]:
+                - generic [ref=e729]: Receipt Data
+                - generic [ref=e730]: Input
+          - generic [ref=e731]:
+            - generic [ref=e732]:
+              - generic [ref=e734]: Validation
+              - generic [ref=e735]: "3"
+            - button "Cash-out Detection Cash-out" [ref=e736]:
+              - generic [ref=e738]:
+                - generic [ref=e739]: Cash-out Detection
+                - generic [ref=e740]: Cash-out
+            - button "Expense Categorization Categorize" [ref=e741]:
+              - generic [ref=e743]:
+                - generic [ref=e744]: Expense Categorization
+                - generic [ref=e745]: Categorize
+            - button "Policy Compliance Policy" [ref=e746]:
+              - generic [ref=e748]:
+                - generic [ref=e749]: Policy Compliance
+                - generic [ref=e750]: Policy
+          - generic [ref=e751]:
+            - generic [ref=e752]:
+              - generic [ref=e754]: Logic
+              - generic [ref=e755]: "3"
+            - button "If-Then Routing If-Then" [ref=e756]:
+              - generic [ref=e758]:
+                - generic [ref=e759]: If-Then Routing
+                - generic [ref=e760]: If-Then
+            - button "Loop over Items Loop" [ref=e761]:
+              - generic [ref=e763]:
+                - generic [ref=e764]: Loop over Items
+                - generic [ref=e765]: Loop
+            - button "Aggregator Aggregate" [ref=e766]:
+              - generic [ref=e768]:
+                - generic [ref=e769]: Aggregator
+                - generic [ref=e770]: Aggregate
+          - generic [ref=e771]:
+            - generic [ref=e772]:
+              - generic [ref=e774]: Output
+              - generic [ref=e775]: "1"
+            - button "Expense Map Map" [ref=e776]:
+              - generic [ref=e778]:
+                - generic [ref=e779]: Expense Map
+                - generic [ref=e780]: Map
+        - generic [ref=e781]:
+          - generic [ref=e782]:
+            - generic [ref=e783]:
+              - generic [ref=e784]: STEP 03 — VISUAL CHAIN BUILDER
+              - heading "Pipeline canvas" [level=3] [ref=e785]
+              - generic [ref=e786]: Drag modules from the toolbox, wire handles, then run the chain.
+            - generic [ref=e787]:
+              - generic [ref=e790]: 7 nodes · 7 edges
+              - button "Clear" [ref=e791] [cursor=pointer]
+              - button "Run chain" [ref=e792] [cursor=pointer]:
+                - img [ref=e794]
+                - generic [ref=e796]: Run chain
+          - application [ref=e798]:
+            - generic [ref=e800]:
+              - generic:
+                - generic:
+                  - img:
+                    - group "Edge from pn-preset-input to pn-preset-cashout" [ref=e801] [cursor=pointer]
+                  - img:
+                    - group "Edge from pn-preset-cashout to pn-preset-cat" [ref=e804] [cursor=pointer]
+                  - img:
+                    - group "Edge from pn-preset-cat to pn-preset-policy" [ref=e807] [cursor=pointer]
+                  - img:
+                    - group "Edge from pn-preset-cat to pn-preset-loop" [ref=e810] [cursor=pointer]
+                  - img:
+                    - group "Edge from pn-preset-policy to pn-preset-loop" [ref=e813] [cursor=pointer]
+                  - img:
+                    - group "Edge from pn-preset-loop to pn-preset-agg" [ref=e816] [cursor=pointer]
+                  - img:
+                    - group "Edge from pn-preset-agg to pn-preset-map" [ref=e819] [cursor=pointer]
+                - generic:
+                  - group [ref=e822]:
+                    - generic [ref=e825]:
+                      - generic [ref=e826]:
+                        - generic [ref=e827]: INPUT
+                        - generic [ref=e828]: success
+                      - generic [ref=e830]: Receipt Data
+                      - generic [ref=e831]: Source of the extracted receipt data. Connects to the chosen OCR result.
+                      - generic [ref=e832]: 3 items · $88.68
+                  - group [ref=e834]:
+                    - generic [ref=e837]:
+                      - generic [ref=e838]:
+                        - generic [ref=e839]: VALIDATION
+                        - generic [ref=e840]: success
+                      - generic [ref=e842]: Cash-out Detection
+                      - generic [ref=e843]: Flags a receipt when the cash_out field is true. Adds a flag and a separate channel.
+                      - generic [ref=e844]: Cash-out detected
+                  - group [ref=e847]:
+                    - generic [ref=e850]:
+                      - generic [ref=e851]:
+                        - generic [ref=e852]: VALIDATION
+                        - generic [ref=e853]: success
+                      - generic [ref=e855]: Expense Categorization
+                      - generic [ref=e856]: Assigns a category to each line item based on keyword rules.
+                      - generic [ref=e857]: 3 categories
+                  - group [ref=e860]:
+                    - generic [ref=e863]:
+                      - generic [ref=e864]:
+                        - generic [ref=e865]: VALIDATION
+                        - generic [ref=e866]: success
+                      - generic [ref=e868]: Policy Compliance
+                      - generic [ref=e869]: Verifies receipt conforms to company expense policy.
+                      - generic [ref=e870]: 1 flags
+                  - group [ref=e873]:
+                    - generic [ref=e876]:
+                      - generic [ref=e877]:
+                        - generic [ref=e878]: LOGIC
+                        - generic [ref=e879]: success
+                      - generic [ref=e881]: Loop over Items
+                      - generic [ref=e882]: Iterates a sub-flow for each line item. The inner branch runs N times.
+                      - generic [ref=e883]: × 3
+                  - group [ref=e886]:
+                    - generic [ref=e889]:
+                      - generic [ref=e890]:
+                        - generic [ref=e891]: LOGIC
+                        - generic [ref=e892]: success
+                      - generic [ref=e894]: Aggregator
+                      - generic [ref=e895]: Sums totals by category across all line items in the receipt.
+                      - generic [ref=e896]: 3 buckets
+                  - group [ref=e899]:
+                    - generic [ref=e902]:
+                      - generic [ref=e903]:
+                        - generic [ref=e904]: OUTPUT
+                        - generic [ref=e905]: success
+                      - generic [ref=e907]: Expense Map
+                      - generic [ref=e908]: Produces the final visual report grouped by category.
+                      - generic [ref=e909]: $88.68
+            - img
+            - generic "Control Panel" [ref=e911]:
+              - button "Zoom In" [ref=e912] [cursor=pointer]:
+                - img [ref=e913]
+              - button "Zoom Out" [ref=e915] [cursor=pointer]:
+                - img [ref=e916]
+              - button "Fit View" [ref=e918] [cursor=pointer]:
+                - img [ref=e919]
+            - img "Mini Map" [ref=e922]
+          - generic [ref=e931]:
+            - generic [ref=e932]: Click a node to edit parameters
+            - generic [ref=e933]: "Feeds: Ampol Fuel & Go (3 items)"
+        - generic [ref=e934]:
+          - generic [ref=e936]:
+            - generic [ref=e937]: CONFIG
+            - heading "Node parameters" [level=3] [ref=e938]
+            - paragraph [ref=e939]: Click a module on the canvas to tune its parameters.
+          - generic [ref=e940]: No module selected.
+      - generic [ref=e941]:
+        - generic [ref=e942]:
+          - generic [ref=e943]: Next step
+          - generic [ref=e944]: Run the chain and view the expense map
+        - link "Continue to Map →" [ref=e945] [cursor=pointer]:
+          - /url: /map
+  - contentinfo [ref=e74]:
+    - generic [ref=e75]: R&D Department · Research Note RND-2026-04
+    - generic [ref=e76]:
+      - text: In-memory pipeline ·
+      - code [ref=e77]: drop, wire, run, export
+    - generic [ref=e78]: v1.0.0

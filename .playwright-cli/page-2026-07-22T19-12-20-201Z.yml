@@ -1,0 +1,51 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: R&D
+      - generic [ref=e7]:
+        - generic [ref=e8]: Financial Document Verification
+        - generic [ref=e9]: VISUAL PIPELINE · JULY 2026 · 04
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: Generated
+        - generic [ref=e13]: 22/07/2026 22:12:19
+      - generic [ref=e14]:
+        - generic [ref=e15]: Locale
+        - generic [ref=e16]: en-AU
+      - generic [ref=e20]: In-memory
+  - tablist [ref=e21]:
+    - tab "01 — Capture & OCR Upload Receipt" [ref=e22] [cursor=pointer]:
+      - generic [ref=e23]: 01 — Capture & OCR
+      - generic [ref=e24]: Upload Receipt
+    - tab "02 — Compose & configure Build Pipeline" [ref=e25] [cursor=pointer]:
+      - generic [ref=e26]: 02 — Compose & configure
+      - generic [ref=e27]: Build Pipeline
+    - tab "03 — Review & export View Expense Map" [active] [ref=e28] [cursor=pointer]:
+      - generic [ref=e29]: 03 — Review & export
+      - generic [ref=e30]: View Expense Map
+  - main [ref=e31]:
+    - generic [ref=e201]:
+      - generic [ref=e202]:
+        - generic [ref=e203]: Step 03 — Review & Export
+        - heading "View the expense map" [level=2] [ref=e204]
+        - paragraph [ref=e205]: The categorised totals are visualised here. Color-coded blocks scale with spend per category; policy flags surface anything that needs attention. Export the final result as JSON for downstream processing.
+      - generic [ref=e207]:
+        - generic [ref=e209]:
+          - generic [ref=e210]: STEP 04 — EXPENSE MAP
+          - heading "Visual expense report" [level=3] [ref=e211]
+          - paragraph [ref=e212]: After running the chain, the categorised totals are visualised here. Color-coded blocks scale with spend per category; export the result as JSON.
+        - generic [ref=e213]: Build a chain and run it to see the expense map.
+      - generic [ref=e214]:
+        - link "← Back to Build" [ref=e215] [cursor=pointer]:
+          - /url: /build
+        - generic [ref=e216]:
+          - generic [ref=e217]: Start over
+          - generic [ref=e218]: Upload a new receipt
+        - link "New Receipt →" [ref=e219] [cursor=pointer]:
+          - /url: /upload
+  - contentinfo [ref=e74]:
+    - generic [ref=e75]: R&D Department · Research Note RND-2026-04
+    - generic [ref=e76]:
+      - text: In-memory pipeline ·
+      - code [ref=e77]: drop, wire, run, export
+    - generic [ref=e78]: v1.0.0

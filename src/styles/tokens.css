@@ -1,0 +1,121 @@
+:root {
+  --color-paper: #faf8f3;
+  --color-paper-deep: #f4f1ea;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #f7f4ed;
+
+  --color-ink: #0f1419;
+  --color-ink-strong: #06090c;
+  --color-ink-muted: #5b6573;
+  --color-ink-subtle: #8a92a0;
+  --color-ink-faint: #b6bcc4;
+
+  --color-border: #e8e4dc;
+  --color-border-strong: #d3cec4;
+  --color-grid: #f0ede6;
+
+  --color-accent: #00b4d8;
+  --color-accent-deep: #0090ad;
+  --color-accent-soft: #e6f7fb;
+
+  --color-highlight: #ff6b35;
+  --color-highlight-soft: #fff0e8;
+
+  --color-success: #2d7d5f;
+  --color-success-soft: #e3f1ea;
+  --color-warning: #c97a1f;
+  --color-warning-soft: #fbeed8;
+  --color-error: #b23a48;
+  --color-error-soft: #f7e0e3;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
+  --space-10: 64px;
+  --space-11: 80px;
+  --space-12: 96px;
+  --space-13: 128px;
+
+  --font-display: "Instrument Serif", "Times New Roman", serif;
+  --font-sans: "Sora", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Menlo, monospace;
+
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-md: 15px;
+  --text-lg: 17px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+  --text-4xl: 42px;
+  --text-5xl: 56px;
+  --text-6xl: 72px;
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+  --tracking-wider: 0.12em;
+  --tracking-widest: 0.2em;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 2px rgba(15, 20, 25, 0.04);
+  --shadow-md: 0 1px 3px rgba(15, 20, 25, 0.06), 0 4px 12px rgba(15, 20, 25, 0.04);
+  --shadow-lg: 0 2px 6px rgba(15, 20, 25, 0.05), 0 12px 32px rgba(15, 20, 25, 0.08);
+  --shadow-xl: 0 4px 12px rgba(15, 20, 25, 0.08), 0 24px 64px rgba(15, 20, 25, 0.12);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 150ms;
+  --duration-base: 240ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+
+  --max-width: 1280px;
+  --tab-bar-height: 64px;
+  --header-height: 96px;
+
+  --cat-fuel: #ff6b35;
+  --cat-fuel-soft: #ffe6dd;
+  --cat-food: #2d7d5f;
+  --cat-food-soft: #d8efe5;
+  --cat-transport: #2563eb;
+  --cat-transport-soft: #dde7fd;
+  --cat-accommodation: #7c3aed;
+  --cat-accommodation-soft: #ebe2fd;
+  --cat-training: #c97a1f;
+  --cat-training-soft: #fbeed8;
+  --cat-equipment: #b23a48;
+  --cat-equipment-soft: #f7e0e3;
+  --cat-office: #0891b2;
+  --cat-office-soft: #d6f1f8;
+  --cat-other: #5b6573;
+  --cat-other-soft: #e6e8ec;
+
+  --mod-input: #00b4d8;
+  --mod-input-soft: #e6f7fb;
+  --mod-validation: #c97a1f;
+  --mod-validation-soft: #fbeed8;
+  --mod-logic: #7c3aed;
+  --mod-logic-soft: #ebe2fd;
+  --mod-output: #2d7d5f;
+  --mod-output-soft: #e3f1ea;
+}

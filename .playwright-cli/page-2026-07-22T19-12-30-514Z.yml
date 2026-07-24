@@ -1,0 +1,70 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: R&D
+      - generic [ref=e7]:
+        - generic [ref=e8]: Financial Document Verification
+        - generic [ref=e9]: VISUAL PIPELINE · JULY 2026 · 04
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: Generated
+        - generic [ref=e13]: 22/07/2026 22:12:29
+      - generic [ref=e14]:
+        - generic [ref=e15]: Locale
+        - generic [ref=e16]: en-AU
+      - generic [ref=e20]: In-memory
+  - tablist [ref=e21]:
+    - tab "01 — Capture & OCR Upload Receipt" [active] [ref=e22] [cursor=pointer]:
+      - generic [ref=e23]: 01 — Capture & OCR
+      - generic [ref=e24]: Upload Receipt
+    - tab "02 — Compose & configure Build Pipeline" [ref=e25] [cursor=pointer]:
+      - generic [ref=e26]: 02 — Compose & configure
+      - generic [ref=e27]: Build Pipeline
+    - tab "03 — Review & export View Expense Map" [ref=e28] [cursor=pointer]:
+      - generic [ref=e29]: 03 — Review & export
+      - generic [ref=e30]: View Expense Map
+  - main [ref=e31]:
+    - generic [ref=e220]:
+      - generic [ref=e221]:
+        - generic [ref=e222]: Step 01 — Upload & Inspect
+        - heading "Capture a receipt" [level=2] [ref=e223]
+        - paragraph [ref=e224]: Drop a receipt image or generate a sample. OCR runs through six progressive stages — text region detection, entity extraction, line-item cross-check — and saves the structured payload in browser memory. Select a receipt to feed into the pipeline.
+      - generic [ref=e225]:
+        - generic [ref=e226]:
+          - generic [ref=e227]:
+            - generic [ref=e228]:
+              - generic [ref=e229]: STEP 01 — UPLOAD & OCR
+              - heading "Capture a receipt" [level=3] [ref=e230]
+              - paragraph [ref=e231]: Drop a receipt image or generate a sample. OCR runs through six progressive stages — text region detection, entity extraction, line-item cross-check — and saves the structured payload for downstream validation.
+            - generic [ref=e234]: Awaiting input
+          - generic [ref=e235] [cursor=pointer]:
+            - img [ref=e237]
+            - generic [ref=e239]: Drop receipt image here
+            - generic [ref=e240]: PNG · JPG · up to 10 MB
+          - generic [ref=e241]:
+            - generic [ref=e242]: Or generate a sample
+            - generic [ref=e243]:
+              - button "ampol-receipt-2026-07-12.jpg" [ref=e244] [cursor=pointer]
+              - button "cafe-lumiere-lunch.png" [ref=e245] [cursor=pointer]
+              - button "metro-taxi-jul15.png" [ref=e246] [cursor=pointer]
+              - button "grand-harbour-2nts.jpg" [ref=e247] [cursor=pointer]
+              - button "techpro-workshop.png" [ref=e248] [cursor=pointer]
+          - generic [ref=e249]: No receipts yet — drop a file or click a sample above.
+        - generic [ref=e250]:
+          - generic [ref=e252]:
+            - generic [ref=e253]: STEP 02 — SELECT & VIEW
+            - heading "Receipt detail" [level=3] [ref=e254]
+            - paragraph [ref=e255]: After OCR completes, the structured receipt is selectable here with all line items and detected fields.
+          - generic [ref=e256]: Upload a receipt to begin.
+      - generic [ref=e257]:
+        - generic [ref=e258]:
+          - generic [ref=e259]: Next step
+          - generic [ref=e260]: Build the verification pipeline
+        - link "Continue to Build →" [ref=e261] [cursor=pointer]:
+          - /url: /build
+  - contentinfo [ref=e74]:
+    - generic [ref=e75]: R&D Department · Research Note RND-2026-04
+    - generic [ref=e76]:
+      - text: In-memory pipeline ·
+      - code [ref=e77]: drop, wire, run, export
+    - generic [ref=e78]: v1.0.0

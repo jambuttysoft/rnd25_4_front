@@ -1,0 +1,36 @@
+{
+  "name": "rnd4-receipt-verification-pipeline",
+  "version": "1.0.0",
+  "description": "R&D Project: Visual Pipeline for Financial Document Verification based on RAG and Agent Chains",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:server": "cd server && npx tsx src/index.ts",
+    "dev:full": "concurrently -n fe,be -c cyan,yellow \"npm run dev\" \"npm run dev:server\"",
+    "build": "vite build",
+    "preview": "vite preview",
+    "exp:parser": "npx tsx src/experiments/experiment-1-parser/index.ts",
+    "exp:rag": "npx tsx src/experiments/experiment-2-rag/index.ts",
+    "exp:perf": "npx tsx src/experiments/experiment-3-perf/index.ts",
+    "exp:all": "npm run exp:parser && npm run exp:rag && npm run exp:perf",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@xyflow/react": "^12.11.2",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "concurrently": "^9.2.4",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
+  }
+}

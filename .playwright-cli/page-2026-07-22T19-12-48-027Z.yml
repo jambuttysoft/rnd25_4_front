@@ -1,0 +1,138 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: R&D
+      - generic [ref=e7]:
+        - generic [ref=e8]: Financial Document Verification
+        - generic [ref=e9]: VISUAL PIPELINE · JULY 2026 · 04
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: Generated
+        - generic [ref=e13]: 22/07/2026 22:12:47
+      - generic [ref=e14]:
+        - generic [ref=e15]: Locale
+        - generic [ref=e16]: en-AU
+      - generic [ref=e20]: In-memory
+  - tablist [ref=e21]:
+    - tab "01 — Capture & OCR Upload Receipt" [ref=e22] [cursor=pointer]:
+      - generic [ref=e23]: 01 — Capture & OCR
+      - generic [ref=e24]: Upload Receipt
+    - tab "02 — Compose & configure Build Pipeline" [active] [ref=e25] [cursor=pointer]:
+      - generic [ref=e26]: 02 — Compose & configure
+      - generic [ref=e27]: Build Pipeline
+    - tab "03 — Review & export View Expense Map" [ref=e28] [cursor=pointer]:
+      - generic [ref=e29]: 03 — Review & export
+      - generic [ref=e30]: View Expense Map
+  - main [ref=e31]:
+    - generic [ref=e394]:
+      - generic [ref=e395]:
+        - generic [ref=e396]: Step 02 — Compose & Configure
+        - heading "Build the pipeline" [level=2] [ref=e397]
+        - paragraph [ref=e398]: Drag modules from the toolbox onto the canvas, wire them together, and tune the parameters of each node. Load the preset chain for a working baseline or assemble your own verification flow.
+      - generic [ref=e399]:
+        - generic [ref=e400]:
+          - generic [ref=e401]:
+            - generic [ref=e402]: STEP 03 — TOOLBOX
+            - heading "Modules" [level=3] [ref=e403]
+            - paragraph [ref=e404]: Drag a module onto the canvas, or click to add. Connect handles to wire the chain.
+          - button "Load preset chain" [ref=e406]:
+            - generic [ref=e407]: Load preset chain
+          - generic [ref=e408]:
+            - generic [ref=e409]:
+              - generic [ref=e411]: Input
+              - generic [ref=e412]: "1"
+            - button "Receipt Data Input" [ref=e413]:
+              - generic [ref=e415]:
+                - generic [ref=e416]: Receipt Data
+                - generic [ref=e417]: Input
+          - generic [ref=e418]:
+            - generic [ref=e419]:
+              - generic [ref=e421]: Validation
+              - generic [ref=e422]: "3"
+            - button "Cash-out Detection Cash-out" [ref=e423]:
+              - generic [ref=e425]:
+                - generic [ref=e426]: Cash-out Detection
+                - generic [ref=e427]: Cash-out
+            - button "Expense Categorization Categorize" [ref=e428]:
+              - generic [ref=e430]:
+                - generic [ref=e431]: Expense Categorization
+                - generic [ref=e432]: Categorize
+            - button "Policy Compliance Policy" [ref=e433]:
+              - generic [ref=e435]:
+                - generic [ref=e436]: Policy Compliance
+                - generic [ref=e437]: Policy
+          - generic [ref=e438]:
+            - generic [ref=e439]:
+              - generic [ref=e441]: Logic
+              - generic [ref=e442]: "3"
+            - button "If-Then Routing If-Then" [ref=e443]:
+              - generic [ref=e445]:
+                - generic [ref=e446]: If-Then Routing
+                - generic [ref=e447]: If-Then
+            - button "Loop over Items Loop" [ref=e448]:
+              - generic [ref=e450]:
+                - generic [ref=e451]: Loop over Items
+                - generic [ref=e452]: Loop
+            - button "Aggregator Aggregate" [ref=e453]:
+              - generic [ref=e455]:
+                - generic [ref=e456]: Aggregator
+                - generic [ref=e457]: Aggregate
+          - generic [ref=e458]:
+            - generic [ref=e459]:
+              - generic [ref=e461]: Output
+              - generic [ref=e462]: "1"
+            - button "Expense Map Map" [ref=e463]:
+              - generic [ref=e465]:
+                - generic [ref=e466]: Expense Map
+                - generic [ref=e467]: Map
+        - generic [ref=e468]:
+          - generic [ref=e469]:
+            - generic [ref=e470]:
+              - generic [ref=e471]: STEP 03 — VISUAL CHAIN BUILDER
+              - heading "Pipeline canvas" [level=3] [ref=e472]
+              - generic [ref=e473]: Drag modules from the toolbox, wire handles, then run the chain.
+            - generic [ref=e474]:
+              - generic [ref=e477]: Empty canvas
+              - button "Clear" [ref=e478] [cursor=pointer]
+              - button "Run chain" [ref=e479] [cursor=pointer]:
+                - img [ref=e481]
+                - generic [ref=e483]: Run chain
+          - generic [ref=e484]:
+            - application [ref=e485]:
+              - img
+              - generic "Control Panel" [ref=e488]:
+                - button "Zoom In" [ref=e489] [cursor=pointer]:
+                  - img [ref=e490]
+                - button "Zoom Out" [ref=e492] [cursor=pointer]:
+                  - img [ref=e493]
+                - button "Fit View" [ref=e495] [cursor=pointer]:
+                  - img [ref=e496]
+              - img "Mini Map" [ref=e499]
+            - generic:
+              - generic:
+                - generic: Empty pipeline
+                - generic:
+                  - text: Drag a module from the toolbox, or click
+                  - strong: Load preset chain
+                  - text: in the sidebar to start.
+          - generic [ref=e501]:
+            - generic [ref=e502]: Click a node to edit parameters
+            - generic [ref=e503]: "Feeds: Ampol Fuel & Go (3 items)"
+        - generic [ref=e504]:
+          - generic [ref=e506]:
+            - generic [ref=e507]: CONFIG
+            - heading "Node parameters" [level=3] [ref=e508]
+            - paragraph [ref=e509]: Click a module on the canvas to tune its parameters.
+          - generic [ref=e510]: No module selected.
+      - generic [ref=e511]:
+        - generic [ref=e512]:
+          - generic [ref=e513]: Next step
+          - generic [ref=e514]: Run the chain and view the expense map
+        - link "Continue to Map →" [ref=e515] [cursor=pointer]:
+          - /url: /map
+  - contentinfo [ref=e74]:
+    - generic [ref=e75]: R&D Department · Research Note RND-2026-04
+    - generic [ref=e76]:
+      - text: In-memory pipeline ·
+      - code [ref=e77]: drop, wire, run, export
+    - generic [ref=e78]: v1.0.0

@@ -1,0 +1,165 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: R&D
+      - generic [ref=e7]:
+        - generic [ref=e8]: Financial Document Verification
+        - generic [ref=e9]: VISUAL PIPELINE · JULY 2026 · 04
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: Generated
+        - generic [ref=e13]: 22/07/2026 22:12:39
+      - generic [ref=e14]:
+        - generic [ref=e15]: Locale
+        - generic [ref=e16]: en-AU
+      - generic [ref=e20]: In-memory
+  - tablist [ref=e21]:
+    - tab "01 — Capture & OCR Upload Receipt" [ref=e22] [cursor=pointer]:
+      - generic [ref=e23]: 01 — Capture & OCR
+      - generic [ref=e24]: Upload Receipt
+    - tab "02 — Compose & configure Build Pipeline" [ref=e25] [cursor=pointer]:
+      - generic [ref=e26]: 02 — Compose & configure
+      - generic [ref=e27]: Build Pipeline
+    - tab "03 — Review & export View Expense Map" [ref=e28] [cursor=pointer]:
+      - generic [ref=e29]: 03 — Review & export
+      - generic [ref=e30]: View Expense Map
+  - main [ref=e31]:
+    - generic [ref=e220]:
+      - generic [ref=e221]:
+        - generic [ref=e222]: Step 01 — Upload & Inspect
+        - heading "Capture a receipt" [level=2] [ref=e223]
+        - paragraph [ref=e224]: Drop a receipt image or generate a sample. OCR runs through six progressive stages — text region detection, entity extraction, line-item cross-check — and saves the structured payload in browser memory. Select a receipt to feed into the pipeline.
+      - generic [ref=e225]:
+        - generic [ref=e226]:
+          - generic [ref=e227]:
+            - generic [ref=e228]:
+              - generic [ref=e229]: STEP 01 — UPLOAD & OCR
+              - heading "Capture a receipt" [level=3] [ref=e230]
+              - paragraph [ref=e231]: Drop a receipt image or generate a sample. OCR runs through six progressive stages — text region detection, entity extraction, line-item cross-check — and saves the structured payload for downstream validation.
+            - generic [ref=e234]: OCR running
+          - generic:
+            - generic:
+              - img
+            - generic: Drop receipt image here
+            - generic: PNG · JPG · up to 10 MB
+          - generic [ref=e241]:
+            - generic [ref=e242]: Or generate a sample
+            - generic [ref=e243]:
+              - button "ampol-receipt-2026-07-12.jpg" [disabled] [ref=e244]
+              - button "cafe-lumiere-lunch.png" [disabled] [ref=e245]
+              - button "metro-taxi-jul15.png" [disabled] [ref=e246]
+              - button "grand-harbour-2nts.jpg" [disabled] [ref=e247]
+              - button "techpro-workshop.png" [disabled] [ref=e248]
+          - generic [ref=e262]:
+            - generic [ref=e263]:
+              - generic [ref=e264]: 00.00s
+              - generic [ref=e265]: Initialising OCR engine…
+            - generic [ref=e266]:
+              - generic [ref=e267]: 00.07s
+              - generic [ref=e268]: Detecting text regions…
+          - generic [ref=e269]:
+            - generic [ref=e270]:
+              - generic [ref=e271]: Merchant
+              - generic [ref=e272]: Ampol Fuel & Go
+            - generic [ref=e273]:
+              - generic [ref=e274]: Date
+              - generic [ref=e275]: 12/07/2026
+            - generic [ref=e276]:
+              - generic [ref=e277]: Total
+              - generic [ref=e278]: $90.30
+            - generic [ref=e279]:
+              - generic [ref=e280]: Items
+              - generic [ref=e281]: "3"
+            - generic [ref=e282]:
+              - generic [ref=e283]: Cash-out
+              - generic [ref=e284]: "Yes"
+          - generic [ref=e285]:
+            - generic [ref=e286]: Uploaded receipts
+            - button "ampol-receipt-2026-07-12.jpg Ampol Fuel & Go 12/07/2026 $90.30 3 items" [ref=e288] [cursor=pointer]:
+              - generic [ref=e289]: ampol-receipt-2026-07-12.jpg
+              - generic [ref=e290]: Ampol Fuel & Go
+              - generic [ref=e291]:
+                - generic [ref=e292]: 12/07/2026
+                - generic [ref=e293]: $90.30
+              - generic [ref=e297]: 3 items
+        - generic [ref=e250]:
+          - generic [ref=e251]:
+            - generic [ref=e252]:
+              - generic [ref=e253]: STEP 02 — SELECT & VIEW
+              - heading "Receipt detail" [level=3] [ref=e254]
+              - paragraph [ref=e255]: Browse every receipt in the in-memory store. Selecting one populates the pipeline input node and any downstream validation.
+            - combobox [ref=e298] [cursor=pointer]:
+              - option "ampol-receipt-2026-07-12.jpg — Ampol Fuel & Go" [selected]
+          - generic [ref=e256]:
+            - generic [ref=e299]:
+              - generic [ref=e300]:
+                - generic [ref=e301]: ampol-receipt-2026-07-12.jpg
+                - generic [ref=e302]: Ampol Fuel & Go
+                - generic [ref=e303]: 12/07/2026 · 3 line items
+              - generic [ref=e304]:
+                - generic [ref=e305]: Total
+                - generic [ref=e306]: $90.30
+                - generic [ref=e309]: OCR
+            - generic [ref=e310]:
+              - generic [ref=e311]:
+                - generic [ref=e312]: Cash-out
+                - generic [ref=e313]: Detected
+              - generic [ref=e314]:
+                - generic [ref=e315]: Loyalty spent
+                - generic [ref=e316]: 320 pts
+              - generic [ref=e317]:
+                - generic [ref=e318]: Card fee
+                - generic [ref=e319]: $1.62
+              - generic [ref=e320]:
+                - generic [ref=e321]: Net goods
+                - generic [ref=e322]: $28.68
+              - generic [ref=e323]:
+                - generic [ref=e324]: Uploaded
+                - generic [ref=e325]: 22:12:38
+              - generic [ref=e326]:
+                - generic [ref=e327]: ID
+                - generic [ref=e328]: rcp-0001
+            - generic [ref=e329]: Line items
+            - table [ref=e331]:
+              - rowgroup [ref=e332]:
+                - row "Description Category Amount" [ref=e333]:
+                  - columnheader "Description" [ref=e334]
+                  - columnheader "Category" [ref=e335]
+                  - columnheader "Amount" [ref=e336]
+              - rowgroup [ref=e337]:
+                - row "Unleaded petrol 38.4L Fuel $72.18" [ref=e338]:
+                  - cell "Unleaded petrol 38.4L" [ref=e339]
+                  - cell "Fuel" [ref=e340]:
+                    - generic [ref=e341]: Fuel
+                  - cell "$72.18" [ref=e343]
+                - row "Bottled water Food $4.50" [ref=e344]:
+                  - cell "Bottled water" [ref=e345]
+                  - cell "Food" [ref=e346]:
+                    - generic [ref=e347]: Food
+                  - cell "$4.50" [ref=e349]
+                - row "Car wash Other $12.00" [ref=e350]:
+                  - cell "Car wash" [ref=e351]
+                  - cell "Other" [ref=e352]:
+                    - generic [ref=e353]: Other
+                  - cell "$12.00" [ref=e355]
+            - generic [ref=e356]:
+              - generic [ref=e357]: Fuel
+              - generic [ref=e359]: Food
+              - generic [ref=e361]: Transport
+              - generic [ref=e363]: Accommodation
+              - generic [ref=e365]: Training
+              - generic [ref=e367]: Equipment
+              - generic [ref=e369]: Office
+              - generic [ref=e371]: Other
+      - generic [ref=e257]:
+        - generic [ref=e258]:
+          - generic [ref=e259]: Next step
+          - generic [ref=e260]: Build the verification pipeline
+        - link "Continue to Build →" [ref=e261] [cursor=pointer]:
+          - /url: /build
+  - contentinfo [ref=e74]:
+    - generic [ref=e75]: R&D Department · Research Note RND-2026-04
+    - generic [ref=e76]:
+      - text: In-memory pipeline ·
+      - code [ref=e77]: drop, wire, run, export
+    - generic [ref=e78]: v1.0.0
