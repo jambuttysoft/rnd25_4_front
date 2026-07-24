@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 async function apiPost<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -36,5 +36,5 @@ export async function runPipeline(receipt: any, threshold?: number) {
 }
 
 export async function healthCheck() {
-  return apiGet('/health') as Promise<{ status: string; timestamp: string }>;
+  return apiGet('/health') as Promise<{ status: string; timestamp: string; development?: boolean }>;
 }

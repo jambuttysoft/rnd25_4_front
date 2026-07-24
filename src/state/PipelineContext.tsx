@@ -12,7 +12,7 @@ import type {
   Receipt,
 } from "../types/pipeline";
 import type { ChainNode, ChainEdge } from "../utils/pipeline/execute";
-import { runPipeline, ocrReceipt } from "../services/api";
+import { runPipeline, ocrReceipt, healthCheck } from "../services/api";
 
 const USER_TEMPLATES_STORAGE_KEY = "pipeline-user-templates";
 
@@ -282,8 +282,7 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
       setTemplates((prev) => [...prev, ...userTemplates]);
     }
     // Check development mode from backend
-    fetch('http://localhost:3001/api/health')
-      .then(r => r.json())
+    healthCheck()
       .then(data => setDevelopmentMode(data.development !== false))
       .catch(() => setDevelopmentMode(true)); // backend down → assume dev mode
   }, []);
