@@ -150,20 +150,66 @@ const styles: Record<string, CSSProperties> = {
   },
   footer: {
     borderTop: "1px solid var(--color-border)",
-    padding: "var(--space-5) var(--space-7)",
+    padding: "var(--space-6) var(--space-7)",
     background: "var(--color-surface)",
+    marginTop: "auto",
+  },
+  footerContainer: {
+    maxWidth: "var(--max-width)",
+    margin: "0 auto",
     display: "flex",
-    alignItems: "center",
+    flexWrap: "wrap",
     justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: "var(--space-6)",
+  },
+  footerBrandCol: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--space-1)",
+  },
+  footerBrandName: {
+    fontFamily: "var(--font-mono)",
+    fontSize: "var(--text-sm)",
+    fontWeight: 700,
+    color: "var(--color-ink-strong)",
+    letterSpacing: "var(--tracking-wider)",
+  },
+  footerEngineName: {
+    fontFamily: "var(--font-sans)",
+    fontSize: "var(--text-sm)",
+    fontWeight: 600,
+    color: "var(--color-ink)",
+  },
+  footerPlatform: {
     fontFamily: "var(--font-mono)",
     fontSize: "var(--text-xs)",
     color: "var(--color-ink-muted)",
     letterSpacing: "var(--tracking-wide)",
   },
-  footerLink: {
+  footerRightCol: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: "var(--space-1)",
+    textAlign: "right" as const,
+  },
+  footerProgramme: {
+    fontFamily: "var(--font-mono)",
+    fontSize: "var(--text-xs)",
+    fontWeight: 600,
+    color: "var(--color-ink)",
+    letterSpacing: "var(--tracking-wide)",
+  },
+  footerCopyright: {
+    fontFamily: "var(--font-mono)",
+    fontSize: "var(--text-xs)",
     color: "var(--color-ink-muted)",
-    textDecoration: "none",
-    transition: "color var(--duration-fast) var(--ease-out)",
+  },
+  footerLegal: {
+    fontFamily: "var(--font-mono)",
+    fontSize: "var(--text-xs)",
+    color: "var(--color-ink-muted)",
   },
 };
 
@@ -255,12 +301,18 @@ function Shell() {
       </main>
 
       <footer style={styles.footer}>
-        <span>R&amp;D Department · Research Note RND-2026-04</span>
-        <span>
-          In-memory&nbsp;pipeline&nbsp;·&nbsp;
-          <code style={{ color: "var(--color-ink)" }}>drop, wire, run, export</code>
-        </span>
-        <span>v1.0.0</span>
+        <div style={styles.footerContainer}>
+          <div style={styles.footerBrandCol}>
+            <span style={styles.footerBrandName}>TOTAL FLOW</span>
+            <span style={styles.footerEngineName}>TOTALFLOW Compliance Intelligence Engine</span>
+            <span style={styles.footerPlatform}>Semantic Reasoning Research Platform</span>
+          </div>
+          <div style={styles.footerRightCol}>
+            <span style={styles.footerProgramme}>Research Programme • R&amp;D 2025</span>
+            <span style={styles.footerCopyright}>© 2025–26 3030 Technologies</span>
+            <span style={styles.footerLegal}>All Rights Reserved.</span>
+          </div>
+        </div>
       </footer>
     </div>
   );
