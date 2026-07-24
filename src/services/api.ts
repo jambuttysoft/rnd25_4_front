@@ -1,7 +1,13 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const rawApiBase = import.meta.env.VITE_API_URL || 'https://rnd4back.muthira.com/api';
+const API_BASE = rawApiBase.replace(/\/+$/, '');
+
+function getUrl(path: string): string {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return `${API_BASE}${normalizedPath}`;
+}
 
 async function apiPost<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(getUrl(path), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -14,7 +20,7 @@ async function apiPost<T>(path: string, body: unknown): Promise<T> {
 }
 
 async function apiGet<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`);
+  const res = await fetch(getUrl(path));
   if (!res.ok) throw new Error(`API error (${res.status}): ${await res.text()}`);
   return res.json();
 }
