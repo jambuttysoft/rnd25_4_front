@@ -366,27 +366,25 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    if (developmentMode) {
-      // Fall back to simulated OCR (dev mode)
-      for (let i = 0; i < steps.length; i++) {
-        await new Promise((r) => setTimeout(r, 350 + Math.random() * 200));
-        setReceipts((prev) =>
-          prev.map((rcp) =>
-            rcp.id === id
-              ? { ...rcp, ocrLog: steps.slice(0, i + 1) }
-              : rcp,
-          ),
-        );
-      }
-
+    // For sample files (no imageDataUrl) OR fallback in dev mode:
+    for (let i = 0; i < steps.length; i++) {
+      await new Promise((r) => setTimeout(r, 200 + Math.random() * 150));
       setReceipts((prev) =>
         prev.map((rcp) =>
           rcp.id === id
-            ? { ...rcp, ocrStatus: "complete", ocrLog: [...steps, "OCR Complete"] }
+            ? { ...rcp, ocrLog: steps.slice(0, i + 1) }
             : rcp,
         ),
       );
     }
+
+    setReceipts((prev) =>
+      prev.map((rcp) =>
+        rcp.id === id
+          ? { ...rcp, ocrStatus: "complete", ocrLog: [...steps, "OCR Complete"] }
+          : rcp,
+      ),
+    );
 
     return id;
   }, [developmentMode]);
