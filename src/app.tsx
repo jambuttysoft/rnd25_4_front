@@ -268,7 +268,7 @@ function Shell() {
           <div style={styles.brandMark}>R&amp;D</div>
           <div style={styles.brandText}>
             <div style={styles.brandTitle}>Financial Document Verification</div>
-            <div style={styles.brandSub}>VISUAL PIPELINE · JULY 2026 · 04</div>
+            <div style={styles.brandSub}>VISUAL PIPELINE · JUNE 2025 · 04</div>
           </div>
         </div>
         <div style={styles.topMeta}>
