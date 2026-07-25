@@ -263,10 +263,27 @@ export function ReceiptDetail() {
           <div style={styles.fieldGrid}>
             <div style={styles.fieldItem}>
               <span style={styles.fieldLabel}>Cash-out</span>
-              <span style={{ ...styles.fieldValue, color: selectedReceipt.cashOut ? "var(--color-warning)" : "var(--color-success)" }}>
-                {selectedReceipt.cashOut ? "Detected" : "None"}
+              <span style={{ ...styles.fieldValue, color: selectedReceipt.cashOut ? "var(--color-warning)" : "var(--color-success)", display: "flex", flexDirection: "column", gap: 2 }}>
+                <span>{selectedReceipt.cashOut ? "Detected" : "None"}</span>
+                {selectedReceipt.cashOut && (selectedReceipt.paidByCard ?? 0) > 0 && (selectedReceipt.changeAmount ?? 0) > 0 && (
+                  <span style={{ fontSize: "var(--text-xs)", fontWeight: 500, color: "var(--color-ink-muted)" }}>
+                    Card payment + ${selectedReceipt.changeAmount!.toFixed(2)} cash change
+                  </span>
+                )}
               </span>
             </div>
+            {(selectedReceipt.paidByCard ?? 0) > 0 && (
+              <div style={styles.fieldItem}>
+                <span style={styles.fieldLabel}>Paid by card</span>
+                <span style={styles.fieldValue}>{AU.currency(selectedReceipt.paidByCard!)}</span>
+              </div>
+            )}
+            {(selectedReceipt.changeAmount ?? 0) > 0 && (
+              <div style={styles.fieldItem}>
+                <span style={styles.fieldLabel}>Change given</span>
+                <span style={styles.fieldValue}>{AU.currency(selectedReceipt.changeAmount!)}</span>
+              </div>
+            )}
             <div style={styles.fieldItem}>
               <span style={styles.fieldLabel}>Loyalty spent</span>
               <span style={styles.fieldValue}>{AU.integer(selectedReceipt.loyaltyPointsSpent)} pts</span>

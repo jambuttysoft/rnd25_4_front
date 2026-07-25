@@ -422,8 +422,13 @@ export function UploadStep() {
           </div>
           <div style={styles.metaItem}>
             <span style={styles.metaLabel}>Cash-out</span>
-            <span style={{ ...styles.metaValue, color: selected.cashOut ? "var(--color-warning)" : "var(--color-success)" }}>
-              {selected.cashOut ? "Yes" : "No"}
+            <span style={{ ...styles.metaValue, color: selected.cashOut ? "var(--color-warning)" : "var(--color-success)", display: "flex", flexDirection: "column", gap: 2 }}>
+              <span>{selected.cashOut ? "Yes" : "No"}</span>
+              {selected.cashOut && (selected.paidByCard ?? 0) > 0 && (selected.changeAmount ?? 0) > 0 && (
+                <span style={{ fontSize: "var(--text-xs)", fontWeight: 500, color: "var(--color-ink-muted)" }}>
+                  card + ${selected.changeAmount!.toFixed(2)} change
+                </span>
+              )}
             </span>
           </div>
         </div>
