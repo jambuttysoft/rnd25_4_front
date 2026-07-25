@@ -341,6 +341,8 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
                   cashOut: apiReceipt.cashOut ?? rcp.cashOut,
                   loyaltyPointsSpent: apiReceipt.loyaltyPointsSpent ?? rcp.loyaltyPointsSpent,
                   cardFeeAmount: apiReceipt.cardFeeAmount ?? rcp.cardFeeAmount,
+                  changeAmount: apiReceipt.changeAmount ?? rcp.changeAmount,
+                  paidByCard: apiReceipt.paidByCard ?? rcp.paidByCard,
                   netGoodsAmount: apiReceipt.netGoodsAmount ?? rcp.netGoodsAmount,
                   ocrStatus: "complete",
                   ocrLog: [...steps, "OCR Complete — server response"],
@@ -768,8 +770,12 @@ function summarise(
   switch (n.data.moduleId) {
     case "input.receipt":
       return `${result.totalItems} items · $${result.totalExpenses.toFixed(2)}`;
-    case "validation.cashout":
-      return result.cashOutDetected ? "Cash-out detected" : "No cash-out";
+    case "validation.cashout": {
+      if (!result.cashOutDetected) return "No cash-out";
+      const reason = result.cashOutReason;
+      if (reason === "card_change") return "Card + cash change";
+      return "Cash-out detected";
+    }
     case "validation.categorize":
       return `${result.byCategory.length} categories`;
     case "validation.policy":

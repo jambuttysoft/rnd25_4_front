@@ -25,6 +25,8 @@ const MERCHANT_POOL: Array<{
   cashOut: boolean;
   loyalty: number;
   cardFee: number;
+  changeAmount?: number;
+  paidByCard?: number;
 }> = [
   {
     merchant: "Ampol Fuel & Go",
@@ -121,6 +123,19 @@ const MERCHANT_POOL: Array<{
     loyalty: 220,
     cardFee: 2.09,
   },
+  {
+    merchant: "Corner Grocer Express",
+    date: "2026-07-23",
+    lineItems: [
+      { description: "Bread loaf", amount: 4.5, category: "Food" },
+      { description: "Bottled water 6-pack", amount: 2.8, category: "Food" },
+    ],
+    cashOut: true,
+    loyalty: 0,
+    cardFee: 0.0,
+    changeAmount: 20.0,
+    paidByCard: 7.30,
+  },
 ];
 
 let poolCounter = 0;
@@ -154,7 +169,9 @@ export function makeReceiptFromTemplate(
     const t = pickReceiptTemplate(filename);
   const subtotal = t.lineItems.reduce((acc, li) => acc + li.amount, 0);
   const total = +(subtotal + t.cardFee).toFixed(2);
-  const netGoods = +(subtotal - (t.cashOut ? 60 : 0)).toFixed(2);
+  const netGoods = t.changeAmount !== undefined
+    ? +(subtotal - t.changeAmount).toFixed(2)
+    : +(subtotal - (t.cashOut ? 60 : 0)).toFixed(2);
   return {
     id,
     filename,
@@ -175,6 +192,8 @@ export function makeReceiptFromTemplate(
     loyaltyPointsSpent: t.loyalty,
     cardFeeAmount: t.cardFee,
     netGoodsAmount: netGoods,
+    changeAmount: t.changeAmount ?? 0,
+    paidByCard: t.paidByCard ?? 0,
   };
 }
 
