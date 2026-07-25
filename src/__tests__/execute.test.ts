@@ -277,6 +277,72 @@ describe("executeChain", () => {
     const result = executeChain(chain, receipt);
     expect(result.byCategory[0].category).toBe("Other");
   });
+
+  it("should detect card+change cashout variant", () => {
+    const receipt = makeReceipt({
+      total: 7.30,
+      lineItems: [
+        { id: "li-1", description: "Bread loaf", amount: 4.5, category: "Food" },
+        { id: "li-2", description: "Bottled water 6-pack", amount: 2.8, category: "Food" },
+      ],
+      cashOut: false,
+      paidByCard: 7.30,
+      changeAmount: 20.00,
+      netGoodsAmount: -12.70,
+    });
+    const chain = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n2", moduleId: "validation.cashout", params: { threshold: 0 } },
+    ]);
+    const result = executeChain(chain, receipt);
+    expect(result.cashOutDetected).toBe(true);
+    expect(result.cashOutReason).toBe("card_change");
+    expect(result.policyFlags.length).toBeGreaterThanOrEqual(1);
+    const flag = result.policyFlags.find((f) => f.rule === "cashout.detected");
+    expect(flag).toBeDefined();
+    expect(flag!.message).toContain("card+change");
+  });
+
+  it("should not flag card+change when changeAmount is 0", () => {
+    const receipt = makeReceipt({
+      total: 50.00,
+      lineItems: [
+        { id: "li-1", description: "Office supplies", amount: 50.0, category: "Office" },
+      ],
+      cashOut: false,
+      paidByCard: 50.00,
+      changeAmount: 0,
+    });
+    const chain = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n2", moduleId: "validation.cashout", params: { threshold: 0 } },
+    ]);
+    const result = executeChain(chain, receipt);
+    expect(result.cashOutDetected).toBe(false);
+    expect(result.cashOutReason).toBe("none");
+  });
+
+  it("should preserve explicit cashout reason priority", () => {
+    const receipt = makeReceipt({
+      total: 87.30,
+      lineItems: [
+        { id: "li-1", description: "Bread loaf", amount: 4.5, category: "Food" },
+        { id: "li-2", description: "Bottled water", amount: 2.8, category: "Food" },
+        { id: "li-3", description: "Cash withdrawal $80", amount: 80.0, category: "Other" },
+      ],
+      cashOut: true,
+      paidByCard: 7.30,
+      changeAmount: 20.00,
+      netGoodsAmount: 7.30,
+    });
+    const chain = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n2", moduleId: "validation.cashout", params: { threshold: 0 } },
+    ]);
+    const result = executeChain(chain, receipt);
+    expect(result.cashOutDetected).toBe(true);
+    expect(result.cashOutReason).toBe("explicit");
+  });
 });
 
 
@@ -358,6 +424,7 @@ describe("buildResultSummary", () => {
     totalExpenses: 38.0,
     totalItems: 3,
     cashOutDetected: false,
+    cashOutReason: "none" as const,
     policyFlags: [],
     receiptId: "rcp-test-0001",
     complianceSummary: {
@@ -379,6 +446,7 @@ describe("buildResultSummary", () => {
     categorized: receipt.lineItems.map((li) => ({ ...li })),
     cashOut: false,
     cashOutAmount: 0,
+    cashOutReason: "none" as const,
     byCategory: new Map(),
     totalExpenses: 38.0,
     cashOutChannel: false,
@@ -460,5 +528,16 @@ describe("buildResultSummary", () => {
   it("should return dash for unknown module", () => {
     const summary = buildResultSummary("unknown.module", ctx, result);
     expect(summary).toBe("—");
+  });
+
+  it("should summarise validation.cashout with card_change reason", () => {
+    const cashCtx: ExecutionContext = {
+      ...ctx,
+      cashOut: true,
+      cashOutAmount: 20,
+      cashOutReason: "card_change",
+    };
+    const summary = buildResultSummary("validation.cashout", cashCtx, result);
+    expect(summary).toBe("Flag: $20.00 cash-out (card+change)");
   });
 });

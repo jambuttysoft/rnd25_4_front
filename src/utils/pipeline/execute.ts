@@ -37,6 +37,8 @@ export interface ExecutionContext {
   categorized: LineItem[];
   cashOut: boolean;
   cashOutAmount: number;
+  /** Why the cashout flag tripped. */
+  cashOutReason: "none" | "explicit" | "implied" | "card_change";
   byCategory: Map<ExpenseCategory, CategoryBucket>;
   totalExpenses: number;
   cashOutChannel: boolean;
@@ -58,6 +60,7 @@ export function executeChain(chain: ChainDefinition, receipt: Receipt, threshold
     categorized: receipt.lineItems.map((li) => ({ ...li })),
     cashOut: receipt.cashOut,
     cashOutAmount: 0,
+    cashOutReason: "none",
     byCategory: new Map(),
     totalExpenses: 0,
     cashOutChannel: false,
@@ -109,6 +112,7 @@ export function executeChain(chain: ChainDefinition, receipt: Receipt, threshold
     totalExpenses: +ctx.totalExpenses.toFixed(2),
     totalItems: ctx.categorized.length,
     cashOutDetected: ctx.cashOut,
+    cashOutReason: ctx.cashOutReason,
     policyFlags: ctx.flags,
     receiptId: receipt.id,
     complianceSummary: {} as ComplianceSummary,
@@ -149,11 +153,27 @@ function runModule(node: ChainNode, ctx: ExecutionContext): void {
       const impliedAmount = ctx.receipt.cashOut
         ? Math.max(0, ctx.receipt.total - ctx.receipt.netGoodsAmount - ctx.receipt.cardFeeAmount)
         : 0;
-      ctx.cashOutAmount = Math.max(explicitAmount, impliedAmount);
+      // Variant 3: card payment + cash change (till dispensed cash as "change")
+      const changeAmount = ctx.receipt.changeAmount ?? 0;
+      const paidByCard = ctx.receipt.paidByCard ?? 0;
+      const cardChangeAmount = paidByCard > 0 && changeAmount > 0 ? changeAmount : 0;
+      ctx.cashOutAmount = Math.max(explicitAmount, impliedAmount, cardChangeAmount);
+      // Determine reason
+      if (cardChangeAmount > 0 && cardChangeAmount >= explicitAmount && cardChangeAmount >= impliedAmount) {
+        ctx.cashOutReason = "card_change";
+      } else if (explicitAmount > 0 && explicitAmount >= impliedAmount) {
+        ctx.cashOutReason = "explicit";
+      } else if (impliedAmount > 0) {
+        ctx.cashOutReason = "implied";
+      } else {
+        ctx.cashOutReason = ctx.cashOut ? "explicit" : "none";
+      }
+      ctx.cashOut = ctx.cashOut || cardChangeAmount > 0;
       if (ctx.cashOut && ctx.cashOutAmount >= threshold) {
+        const suffix = ctx.cashOutReason === "card_change" ? " (card+change)" : "";
         ctx.flags.push({
           rule: "cashout.detected",
-          message: `Cash-out of $${ctx.cashOutAmount.toFixed(2)} detected on ${ctx.receipt.merchant}.`,
+          message: `Cash-out of $${ctx.cashOutAmount.toFixed(2)} detected on ${ctx.receipt.merchant}.${suffix}`,
           severity: "warning",
           receiptId: ctx.receipt.id,
         });
@@ -165,7 +185,7 @@ function runModule(node: ChainNode, ctx: ExecutionContext): void {
         passed: !(ctx.cashOut && ctx.cashOutAmount >= threshold),
         score: ctx.cashOut && ctx.cashOutAmount >= threshold ? 0 : 1,
         detail: ctx.cashOut && ctx.cashOutAmount >= threshold
-          ? `Cash-out detected: $${ctx.cashOutAmount.toFixed(2)}`
+          ? `Cash-out detected${ctx.cashOutReason === "card_change" ? " (card+change)" : ""}: $${ctx.cashOutAmount.toFixed(2)}`
           : "No cash-out detected",
       });
       return;
@@ -364,6 +384,8 @@ export function buildResultSummary(moduleId: string, ctx: ExecutionContext, resu
     case "input.receipt":
       return `${ctx.receipt.merchant} · $${ctx.receipt.total.toFixed(2)}`;
     case "validation.cashout":
+      if (!ctx.cashOut) return "No cash-out";
+      if (ctx.cashOutReason === "card_change") return `Flag: $${ctx.cashOutAmount.toFixed(2)} cash-out (card+change)`;
       return ctx.cashOut
         ? `Flag: $${ctx.cashOutAmount.toFixed(2)} cash-out`
         : "No cash-out";

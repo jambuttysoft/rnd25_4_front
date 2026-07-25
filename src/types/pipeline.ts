@@ -54,6 +54,10 @@ export interface Receipt {
   loyaltyPointsSpent: number;
   cardFeeAmount: number;
   netGoodsAmount: number;
+  /** Amount shown on the "Change" / "CHANGE" line of the receipt. 0 if no change line. */
+  changeAmount?: number;
+  /** Amount actually paid by card. 0 if paid in cash only. Often equals total for card-only payment. */
+  paidByCard?: number;
 }
 
 export type ModuleType = "input" | "validation" | "logic" | "output";
@@ -112,6 +116,8 @@ export interface PipelineResult {
   totalExpenses: number;
   totalItems: number;
   cashOutDetected: boolean;
+  /** Reason / variant of the cash-out detection, used by the UI to show context. */
+  cashOutReason: "none" | "explicit" | "implied" | "card_change";
   policyFlags: PolicyFlag[];
   receiptId: string;
   complianceSummary: ComplianceSummary;
