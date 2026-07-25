@@ -81,6 +81,10 @@ const styles: Record<string, CSSProperties> = {
     letterSpacing: "var(--tracking-tight)",
     fontVariantNumeric: "tabular-nums" as const,
   },
+  summarySub: {
+    fontSize: "var(--text-xs)",
+    color: "var(--color-ink-subtle)",
+  },
   bars: {
     display: "flex",
     flexDirection: "column",
@@ -272,7 +276,7 @@ function LoadingPanel() {
 }
 
 function ResultsPanel({ result }: { result: PipelineResult }) {
-  const { byCategory, totalExpenses, totalItems, policyFlags, cashOutDetected, receiptId } = result;
+  const { byCategory, totalExpenses, totalItems, policyFlags, cashOutDetected, cashOutReason, receiptId } = result;
   const max = useMemo(
     () => Math.max(...byCategory.map((b) => b.total), 0.01),
     [byCategory],
@@ -327,6 +331,11 @@ function ResultsPanel({ result }: { result: PipelineResult }) {
           >
             {cashOutDetected ? "Detected" : "Clear"}
           </span>
+          {cashOutDetected && cashOutReason && cashOutReason !== "none" && (
+            <span style={styles.summarySub}>
+              {cashOutReason === "card_change" ? "card + cash change" : cashOutReason === "explicit" ? "explicit line item" : "implied amount"}
+            </span>
+          )}
         </div>
       </div>
 

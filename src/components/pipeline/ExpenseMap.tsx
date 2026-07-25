@@ -279,7 +279,7 @@ export function ExpenseMap() {
     );
   }
 
-  const { byCategory, totalExpenses, totalItems, policyFlags, cashOutDetected } = lastResult;
+  const { byCategory, totalExpenses, totalItems, policyFlags, cashOutDetected, cashOutReason } = lastResult;
   const max = Math.max(...byCategory.map((b) => b.total), 0.01);
 
   return (
@@ -334,7 +334,11 @@ export function ExpenseMap() {
           >
             {cashOutDetected ? "Detected" : "Clear"}
           </span>
-          <span style={styles.summarySub}>Validation channel result</span>
+          {cashOutDetected && cashOutReason && cashOutReason !== "none" && (
+            <span style={styles.summarySub}>
+              {cashOutReason === "card_change" ? "card + cash change" : cashOutReason === "explicit" ? "explicit line item" : "implied amount"}
+            </span>
+          )}
         </div>
       </div>
 
