@@ -317,6 +317,23 @@ export const CATEGORY_ACCOUNT_CODES: Record<string, string> = {
   Other: "6490",
 };
 
+export const CHART_OF_ACCOUNTS: Record<string, string> = {
+  "2100": "Accounts payable",
+  "6410": "Motor vehicle expenses",
+  "6420": "Meal and entertainment expenses",
+  "6430": "Travel expenses",
+  "6440": "Accommodation expenses",
+  "6450": "Training and conference expenses",
+  "6460": "Equipment expenses",
+  "6470": "Office expenses",
+  "6490": "General expenses",
+  "6510": "Cash drawings — cash-out review",
+};
+
+export function getAccountName(code: string): string {
+  return CHART_OF_ACCOUNTS[code] ?? `Account ${code}`;
+}
+
 export function generateJournalEntry(
   result: PipelineResult,
   receipt: Receipt,

@@ -1,6 +1,7 @@
 import { usePipeline } from "../../state/PipelineContext";
 import type { JournalEntry, JournalEntryLine } from "../../types/pipeline";
 import { AU } from "../../utils/format";
+import { getAccountName } from "../../utils/pipeline/execute";
 import type { CSSProperties } from "react";
 
 const styles: Record<string, CSSProperties> = {
@@ -230,7 +231,9 @@ function EntryRow({
         ...(isCredit ? styles.tableRowCredit : {}),
       }}
     >
-      <span style={styles.cellAccount}>{line.accountCode}</span>
+      <span style={styles.cellAccount} title={getAccountName(line.accountCode)}>
+        {line.accountCode}
+      </span>
       <span style={styles.cellDescription} title={line.description}>
         {line.description}
       </span>

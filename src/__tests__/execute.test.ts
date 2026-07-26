@@ -3,6 +3,7 @@ import {
   executeChain,
   topologicalOrder,
   buildResultSummary,
+  getAccountName,
   type ChainNode,
   type ChainEdge,
   type ChainDefinition,
@@ -573,5 +574,27 @@ describe("buildResultSummary", () => {
     };
     const summary = buildResultSummary("validation.cashout", cashCtx, result);
     expect(summary).toBe("Flag: $20.00 cash-out (card+change)");
+  });
+});
+
+
+describe("getAccountName", () => {
+  it("returns the human name for known expense account codes", () => {
+    expect(getAccountName("6410")).toBe("Motor vehicle expenses");
+    expect(getAccountName("6420")).toBe("Meal and entertainment expenses");
+    expect(getAccountName("6440")).toBe("Accommodation expenses");
+  });
+
+  it("returns the liability name for accounts payable", () => {
+    expect(getAccountName("2100")).toBe("Accounts payable");
+  });
+
+  it("returns the cash-out review name for code 6510", () => {
+    expect(getAccountName("6510")).toBe("Cash drawings — cash-out review");
+  });
+
+  it("falls back to a generic label for unknown codes", () => {
+    expect(getAccountName("9999")).toBe("Account 9999");
+    expect(getAccountName("")).toBe("Account ");
   });
 });
