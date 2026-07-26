@@ -249,6 +249,40 @@ describe("executeChain", () => {
     expect(result.byCategory).toHaveLength(0);
   });
 
+  it("should generate a journal entry when compliance score meets threshold", () => {
+    const receipt = makeReceipt({
+      lineItems: [
+        { id: "li-1", description: "Lunch set", amount: 28.5, category: "Food" },
+        { id: "li-2", description: "Espresso", amount: 5.5, category: "Food" },
+      ],
+    });
+    const chain = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n2", moduleId: "validation.categorize", params: { fallback: "Other" } },
+    ]);
+    const result = executeChain(chain, receipt, 80);
+    expect(result.complianceSummary.isCompliant).toBe(true);
+    expect(result.journalEntry).not.toBeNull();
+    expect(result.journalEntry?.lines.length).toBeGreaterThan(0);
+    const creditLine = result.journalEntry?.lines.find((l) => l.type === "credit");
+    expect(creditLine).toBeDefined();
+  });
+
+  it("should return null journal entry when compliance score is below threshold", () => {
+    const receipt = makeReceipt({
+      lineItems: [
+        { id: "li-1", description: "Lunch set", amount: 28.5, category: "Food" },
+      ],
+    });
+    const chain = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n2", moduleId: "validation.categorize", params: { fallback: "Other" } },
+    ]);
+    const result = executeChain(chain, receipt, 1000);
+    expect(result.complianceSummary.isCompliant).toBe(false);
+    expect(result.journalEntry).toBeNull();
+  });
+
   it("should handle fallback category for uncategorized items", () => {
     const receipt = makeReceipt({
       lineItems: [

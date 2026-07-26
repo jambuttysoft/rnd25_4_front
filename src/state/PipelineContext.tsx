@@ -513,14 +513,11 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
     } catch {
       console.warn("[Pipeline] Backend unavailable, using in-memory execution");
       const result = executeChain(chain, selectedReceipt);
-      (result as any).complianceSummary = {
-        totalRules: 0, passedRules: 0, failedRules: 0,
-        score: 1, percentage: 100, threshold: complianceThreshold,
-        isCompliant: true, ruleChecks: [],
-      };
-      (result as any).journalEntry = null;
-      setLastResult(result as PipelineResult);
-      setLastJournalEntry(null);
+      result.complianceSummary.threshold = complianceThreshold;
+      result.complianceSummary.isCompliant =
+        result.complianceSummary.percentage >= complianceThreshold;
+      setLastResult(result);
+      setLastJournalEntry(result.journalEntry ?? null);
       setNodes((nds) =>
         nds.map((n) => {
           const summary = summarise(n, result as PipelineResult);

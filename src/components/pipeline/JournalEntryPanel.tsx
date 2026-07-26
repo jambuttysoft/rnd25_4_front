@@ -258,6 +258,10 @@ export function JournalEntryPanel() {
   const { lastResult, exportJournalEntry } = usePipeline();
   const journalEntry: JournalEntry | null = lastResult?.journalEntry ?? null;
   const isCompliant = lastResult?.complianceSummary.isCompliant ?? false;
+  const compliance = lastResult?.complianceSummary;
+  const pendingReason = !isCompliant
+    ? `Compliance score ${compliance?.percentage ?? 0}% is below the ${compliance?.threshold ?? 0}% threshold.`
+    : "No journal entry was returned by the pipeline.";
 
   if (!journalEntry || !isCompliant) {
     return (
@@ -273,7 +277,7 @@ export function JournalEntryPanel() {
           <span style={{ ...styles.badge, ...styles.badgePending }}>Not generated</span>
         </div>
         <div style={styles.empty}>
-          Journal entry not generated — score below threshold.
+          {pendingReason}
         </div>
       </div>
     );
