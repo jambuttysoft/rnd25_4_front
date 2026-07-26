@@ -112,6 +112,7 @@ export function executeChain(chain: ChainDefinition, receipt: Receipt, threshold
     totalExpenses: +ctx.totalExpenses.toFixed(2),
     totalItems: ctx.categorized.length,
     cashOutDetected: ctx.cashOut,
+    cashOutAmount: +ctx.cashOutAmount.toFixed(2),
     cashOutReason: ctx.cashOutReason,
     policyFlags: ctx.flags,
     receiptId: receipt.id,
@@ -318,6 +319,7 @@ export const CATEGORY_ACCOUNT_CODES: Record<string, string> = {
 };
 
 export const CHART_OF_ACCOUNTS: Record<string, string> = {
+  "1100": "Petty cash",
   "2100": "Accounts payable",
   "6410": "Motor vehicle expenses",
   "6420": "Meal and entertainment expenses",
@@ -327,8 +329,26 @@ export const CHART_OF_ACCOUNTS: Record<string, string> = {
   "6460": "Equipment expenses",
   "6470": "Office expenses",
   "6490": "General expenses",
+  "6500": "Owner drawings (A/W)",
   "6510": "Cash drawings — cash-out review",
 };
+
+export const DEFAULT_CASH_OUT_ACCOUNT_CODE = "6500";
+
+const CASH_OUT_KEYWORD_RE = /cash|withdrawal|atm/i;
+
+export function computeCashOutAmount(receipt: Receipt): number {
+  const changeAmount = receipt.changeAmount ?? 0;
+  const paidByCard = receipt.paidByCard ?? 0;
+  const cardChangeAmount = paidByCard > 0 && changeAmount > 0 ? changeAmount : 0;
+  const explicitAmount = receipt.lineItems
+    .filter((li) => CASH_OUT_KEYWORD_RE.test(li.description))
+    .reduce((sum, li) => sum + (li.amount ?? 0), 0);
+  const impliedAmount = receipt.cashOut
+    ? Math.max(0, receipt.total - receipt.netGoodsAmount - receipt.cardFeeAmount)
+    : 0;
+  return Math.max(cardChangeAmount, explicitAmount, impliedAmount);
+}
 
 export function getAccountName(code: string): string {
   return CHART_OF_ACCOUNTS[code] ?? `Account ${code}`;
@@ -337,12 +357,12 @@ export function getAccountName(code: string): string {
 export function generateJournalEntry(
   result: PipelineResult,
   receipt: Receipt,
+  cashOutAccountCode: string = DEFAULT_CASH_OUT_ACCOUNT_CODE,
 ): JournalEntry | null {
   if (!result.complianceSummary.isCompliant) return null;
 
   const lines: JournalEntryLine[] = [];
 
-  // Debit lines — one per category
   for (const bucket of result.byCategory) {
     const accountCode = CATEGORY_ACCOUNT_CODES[bucket.category] || "6490";
     lines.push({
@@ -354,11 +374,23 @@ export function generateJournalEntry(
     });
   }
 
-  // Credit line — total to Accounts Payable
+  const cashOutAmount = +(result.cashOutAmount ?? computeCashOutAmount(receipt)).toFixed(2);
+  if (result.cashOutDetected && cashOutAmount > 0) {
+    const accountLabel = CHART_OF_ACCOUNTS[cashOutAccountCode] ?? "Cash withdrawal";
+    lines.push({
+      accountCode: cashOutAccountCode,
+      description: `${accountLabel} - ${receipt.merchant}`,
+      amount: cashOutAmount,
+      type: "debit",
+      taxRate: "GST Free",
+    });
+  }
+
+  const totalDebits = +lines.reduce((a, l) => a + l.amount, 0).toFixed(2);
   lines.push({
     accountCode: "2100",
     description: `Accounts payable - ${receipt.merchant}`,
-    amount: +result.totalExpenses.toFixed(2),
+    amount: totalDebits,
     type: "credit",
   });
 
@@ -367,7 +399,7 @@ export function generateJournalEntry(
     receiptId: receipt.id,
     merchant: receipt.merchant,
     date: receipt.date,
-    total: result.totalExpenses,
+    total: totalDebits,
     lines,
     summary: `Expense allocation for ${receipt.merchant} - ${receipt.date}`,
     createdAt: new Date().toISOString(),

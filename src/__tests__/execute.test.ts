@@ -4,6 +4,7 @@ import {
   topologicalOrder,
   buildResultSummary,
   getAccountName,
+  computeCashOutAmount,
   type ChainNode,
   type ChainEdge,
   type ChainDefinition,
@@ -378,6 +379,94 @@ describe("executeChain", () => {
     expect(result.cashOutDetected).toBe(true);
     expect(result.cashOutReason).toBe("explicit");
   });
+
+  it("should split cashout into purchase + drawings lines that reconcile", () => {
+    const receipt = makeReceipt({
+      total: 150,
+      lineItems: [
+        { id: "li-1", description: "Office supplies", amount: 50, category: "Office" },
+      ],
+      cashOut: true,
+      netGoodsAmount: 50,
+      cardFeeAmount: 0,
+    });
+    const chain = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n2", moduleId: "validation.cashout", params: { threshold: 200 } },
+      { id: "n3", moduleId: "validation.categorize", params: { fallback: "Other" } },
+    ]);
+    const result = executeChain(chain, receipt);
+    expect(result.cashOutDetected).toBe(true);
+    expect(result.cashOutAmount).toBe(100);
+    expect(result.journalEntry).not.toBeNull();
+
+    const entry = result.journalEntry!;
+    const debitLines = entry.lines.filter((l) => l.type === "debit");
+    const creditLine = entry.lines.find((l) => l.type === "credit");
+    expect(debitLines).toHaveLength(2);
+    expect(creditLine).toBeDefined();
+
+    const purchaseLine = debitLines.find((l) => l.accountCode === "6470");
+    expect(purchaseLine?.amount).toBe(50);
+    const drawingsLine = debitLines.find((l) => l.accountCode === "6500");
+    expect(drawingsLine?.amount).toBe(100);
+    expect(drawingsLine?.taxRate).toBe("GST Free");
+
+    const totalDebits = debitLines.reduce((sum, l) => sum + l.amount, 0);
+    expect(totalDebits).toBe(creditLine!.amount);
+    expect(creditLine?.amount).toBe(150);
+  });
+
+  it("should split card+change cashout using the changeAmount", () => {
+    const receipt = makeReceipt({
+      total: 27.30,
+      lineItems: [
+        { id: "li-1", description: "Bread loaf", amount: 4.5, category: "Food" },
+        { id: "li-2", description: "Bottled water 6-pack", amount: 2.8, category: "Food" },
+      ],
+      cashOut: false,
+      paidByCard: 7.30,
+      changeAmount: 20.00,
+      netGoodsAmount: 7.30,
+      cardFeeAmount: 0,
+    });
+    const chain = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n2", moduleId: "validation.cashout", params: { threshold: 100 } },
+      { id: "n3", moduleId: "validation.categorize", params: { fallback: "Other" } },
+    ]);
+    const result = executeChain(chain, receipt);
+    expect(result.cashOutDetected).toBe(true);
+    expect(result.cashOutReason).toBe("card_change");
+    expect(result.cashOutAmount).toBe(20.00);
+
+    const entry = result.journalEntry!;
+    const drawingsLine = entry.lines.find((l) => l.accountCode === "6500");
+    expect(drawingsLine?.amount).toBe(20.00);
+    const creditLine = entry.lines.find((l) => l.type === "credit");
+    expect(creditLine?.amount).toBe(27.30);
+  });
+
+  it("should not add a cashout debit line when amount is zero", () => {
+    const receipt = makeReceipt({
+      total: 50,
+      lineItems: [
+        { id: "li-1", description: "Office supplies", amount: 50, category: "Office" },
+      ],
+      cashOut: true,
+      netGoodsAmount: 50,
+      cardFeeAmount: 0,
+    });
+    const chain = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n3", moduleId: "validation.categorize", params: { fallback: "Other" } },
+    ]);
+    const result = executeChain(chain, receipt);
+    expect(result.cashOutDetected).toBe(true);
+    expect(result.cashOutAmount).toBe(0);
+    const entry = result.journalEntry!;
+    expect(entry.lines.find((l) => l.accountCode === "6500")).toBeUndefined();
+  });
 });
 
 
@@ -459,6 +548,7 @@ describe("buildResultSummary", () => {
     totalExpenses: 38.0,
     totalItems: 3,
     cashOutDetected: false,
+    cashOutAmount: 0,
     cashOutReason: "none" as const,
     policyFlags: [],
     receiptId: "rcp-test-0001",
@@ -593,8 +683,70 @@ describe("getAccountName", () => {
     expect(getAccountName("6510")).toBe("Cash drawings — cash-out review");
   });
 
+  it("returns owner drawings for code 6500 and petty cash for 1100", () => {
+    expect(getAccountName("6500")).toBe("Owner drawings (A/W)");
+    expect(getAccountName("1100")).toBe("Petty cash");
+  });
+
   it("falls back to a generic label for unknown codes", () => {
     expect(getAccountName("9999")).toBe("Account 9999");
     expect(getAccountName("")).toBe("Account ");
+  });
+});
+
+
+describe("computeCashOutAmount", () => {
+  it("returns the changeAmount when paidByCard > 0 and changeAmount > 0", () => {
+    expect(
+      computeCashOutAmount({
+        ...makeReceipt(),
+        cashOut: false,
+        paidByCard: 7.3,
+        changeAmount: 20,
+        total: 7.3,
+        netGoodsAmount: 7.3,
+        cardFeeAmount: 0,
+      }),
+    ).toBe(20);
+  });
+
+  it("returns the implied amount when cashOut is true and no card+change", () => {
+    expect(
+      computeCashOutAmount({
+        ...makeReceipt(),
+        cashOut: true,
+        total: 150,
+        netGoodsAmount: 50,
+        cardFeeAmount: 0,
+      }),
+    ).toBe(100);
+  });
+
+  it("returns the explicit line-item amount when it exceeds the implied", () => {
+    expect(
+      computeCashOutAmount({
+        ...makeReceipt(),
+        cashOut: true,
+        total: 100,
+        netGoodsAmount: 50,
+        cardFeeAmount: 0,
+        lineItems: [
+          { id: "li-1", description: "Goods", amount: 50, category: "Office" },
+          { id: "li-2", description: "Cash withdrawal $200", amount: 200, category: "Other" },
+        ],
+      }),
+    ).toBe(200);
+  });
+
+  it("returns 0 when no cashout signals are present", () => {
+    expect(
+      computeCashOutAmount({
+        ...makeReceipt(),
+        cashOut: false,
+        total: 50,
+        netGoodsAmount: 50,
+        cardFeeAmount: 0,
+      }),
+    ).toBe(0);
   });
 });

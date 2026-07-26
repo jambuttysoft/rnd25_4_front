@@ -116,6 +116,8 @@ export interface PipelineResult {
   totalExpenses: number;
   totalItems: number;
   cashOutDetected: boolean;
+  /** Computed cash-out amount (max of explicit / implied / card_change variants). */
+  cashOutAmount: number;
   /** Reason / variant of the cash-out detection, used by the UI to show context. */
   cashOutReason: "none" | "explicit" | "implied" | "card_change";
   policyFlags: PolicyFlag[];
