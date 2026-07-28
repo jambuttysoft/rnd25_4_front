@@ -273,6 +273,37 @@ function runModule(node: ChainNode, ctx: ExecutionContext): void {
       });
       return;
     }
+    case "validation.foreign_no_abn": {
+      const withholdingRate = Number(node.params.withholdingTaxRate ?? 47);
+      const country = (ctx.receipt.country ?? "AU").toUpperCase();
+      const abn = (ctx.receipt.abn ?? "").trim();
+      const isForeign = country !== "AU";
+      const isMissingAbn = !abn;
+      const isForeignNoAbn = isForeign && isMissingAbn;
+
+      if (isForeignNoAbn) {
+        ctx.flags.push({
+          rule: "validation.foreign_no_abn",
+          message: `Foreign supplier ${ctx.receipt.merchant} (${country}) has no ABN. Risk of ${withholdingRate}% No-ABN withholding tax or reverse charge requirement.`,
+          severity: "warning",
+          receiptId: ctx.receipt.id,
+        });
+      }
+
+      ctx.ruleChecks.push({
+        ruleId: "foreign_no_abn",
+        ruleName: "Foreign Supplier Without ABN",
+        category: "validation",
+        passed: !isForeignNoAbn,
+        score: isForeignNoAbn ? 0 : 1,
+        detail: isForeignNoAbn
+          ? `Foreign supplier ${ctx.receipt.merchant} (${country}) without ABN detected — subject to ${withholdingRate}% withholding check`
+          : isForeign
+            ? `Foreign supplier ${ctx.receipt.merchant} (${country}) has valid ABN (${abn})`
+            : `AU supplier (${ctx.receipt.merchant})`,
+      });
+      return;
+    }
     case "validation.policy": {
       const maxMeal = Number(node.params.maxMeal ?? 35);
       const maxHotelNight = Number(node.params.maxHotelNight ?? 250);

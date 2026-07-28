@@ -794,3 +794,55 @@ describe("Three-way logical rules (logic.threshold & logic.compliance_split)", (
     expect(resultPass.policyFlags.some((f) => f.rule === "Compliance Risk Splitter")).toBe(true);
   });
 });
+
+
+describe("validation.foreign_no_abn module", () => {
+  it("flags foreign supplier without ABN (e.g. US cloud provider)", () => {
+    const chain = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n2", moduleId: "validation.foreign_no_abn", params: { withholdingTaxRate: 47 } },
+    ]);
+    const foreignNoAbnReceipt = makeReceipt({
+      merchant: "DigitalOcean LLC",
+      country: "US",
+      abn: undefined,
+    });
+    const result = executeChain(chain, foreignNoAbnReceipt);
+    expect(result.policyFlags.some((f) => f.rule === "validation.foreign_no_abn")).toBe(true);
+    const check = result.complianceSummary?.ruleChecks.find((r) => r.ruleId === "foreign_no_abn");
+    expect(check?.passed).toBe(false);
+    expect(check?.detail).toContain("DigitalOcean LLC");
+  });
+
+  it("passes Australian supplier even without ABN in this check", () => {
+    const chain = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n2", moduleId: "validation.foreign_no_abn" },
+    ]);
+    const auReceipt = makeReceipt({
+      merchant: "Corner Cafe",
+      country: "AU",
+      abn: undefined,
+    });
+    const result = executeChain(chain, auReceipt);
+    expect(result.policyFlags.some((f) => f.rule === "validation.foreign_no_abn")).toBe(false);
+    const check = result.complianceSummary?.ruleChecks.find((r) => r.ruleId === "foreign_no_abn");
+    expect(check?.passed).toBe(true);
+  });
+
+  it("passes foreign supplier with valid ABN", () => {
+    const chain = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n2", moduleId: "validation.foreign_no_abn" },
+    ]);
+    const foreignWithAbnReceipt = makeReceipt({
+      merchant: "AWS Australia Branch",
+      country: "US",
+      abn: "12345678901",
+    });
+    const result = executeChain(chain, foreignWithAbnReceipt);
+    expect(result.policyFlags.some((f) => f.rule === "validation.foreign_no_abn")).toBe(false);
+    const check = result.complianceSummary?.ruleChecks.find((r) => r.ruleId === "foreign_no_abn");
+    expect(check?.passed).toBe(true);
+  });
+});

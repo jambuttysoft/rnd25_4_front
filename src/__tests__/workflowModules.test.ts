@@ -161,6 +161,8 @@ describe("MODULES", () => {
       "validation.cashout",
       "validation.categorize",
       "validation.policy",
+      "validation.abn",
+      "validation.foreign_no_abn",
       "logic.ifthen",
       "logic.threshold",
       "logic.compliance_split",
@@ -174,8 +176,8 @@ describe("MODULES", () => {
     }
   });
 
-  it("should have MODULE_LIST with 11 entries", () => {
-    expect(MODULE_LIST).toHaveLength(11);
+  it("should have MODULE_LIST with 12 entries", () => {
+    expect(MODULE_LIST).toHaveLength(12);
   });
 
   it("each module should have required fields", () => {

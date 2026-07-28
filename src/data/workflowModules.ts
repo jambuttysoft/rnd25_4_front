@@ -388,6 +388,36 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     inputs: 1,
     outputs: 1,
   },
+  "validation.foreign_no_abn": {
+    id: "validation.foreign_no_abn",
+    type: "validation",
+    label: "Foreign Supplier No-ABN Check",
+    shortLabel: "Foreign No-ABN",
+    description: "Flags overseas suppliers (non-AU) that do not have an Australian Business Number (ABN). Useful for audit compliance and 47% No-ABN withholding tax detection.",
+    defaultParams: {
+      action: "flag",
+      withholdingTaxRate: 47,
+    },
+    paramSchema: [
+      {
+        key: "action",
+        label: "Action",
+        kind: "select",
+        options: ["flag", "block", "annotate"],
+        defaultValue: "flag",
+        help: "Action to take when a foreign vendor lacks an ABN.",
+      },
+      {
+        key: "withholdingTaxRate",
+        label: "Withholding tax rate (%)",
+        kind: "number",
+        defaultValue: 47,
+        help: "ATO default withholding rate for suppliers without an ABN.",
+      },
+    ],
+    inputs: 1,
+    outputs: 1,
+  },
   "logic.ifthen": {
     id: "logic.ifthen",
     type: "logic",

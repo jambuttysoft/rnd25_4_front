@@ -74,6 +74,7 @@ export type ModuleId =
   | "validation.categorize"
   | "validation.policy"
   | "validation.abn"
+  | "validation.foreign_no_abn"
   | "logic.ifthen"
   | "logic.threshold"
   | "logic.compliance_split"
