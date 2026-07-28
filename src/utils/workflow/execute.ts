@@ -1,4 +1,4 @@
-import { inferCategory } from "../../data/pipelineModules";
+import { inferCategory } from "../../data/workflowModules";
 import type {
   CategoryBucket,
   ComplianceSummary,
@@ -6,12 +6,12 @@ import type {
   JournalEntry,
   JournalEntryLine,
   LineItem,
-  PipelineResult,
   PolicyFlag,
   Receipt,
   RuleCheck,
-} from "../../types/pipeline";
-import { EXPENSE_CATEGORIES } from "../../types/pipeline";
+  WorkflowResult,
+} from "../../types/workflow";
+import { EXPENSE_CATEGORIES } from "../../types/workflow";
 
 export interface ChainNode {
   id: string;
@@ -43,6 +43,14 @@ export interface ExecutionContext {
   totalExpenses: number;
   cashOutChannel: boolean;
   normalChannel: boolean;
+  lowChannel: boolean;
+  midChannel: boolean;
+  highChannel: boolean;
+  riskPassChannel: boolean;
+  riskWarnChannel: boolean;
+  riskFailChannel: boolean;
+  thresholdField: string;
+  thresholdValue: number;
   ruleChecks: RuleCheck[];
   threshold: number;
 }
@@ -53,7 +61,7 @@ function comparePolicyValue(actual: number, rule: string): { ok: boolean; severi
   return { ok: true, severity: "info" };
 }
 
-export function executeChain(chain: ChainDefinition, receipt: Receipt, threshold?: number): PipelineResult {
+export function executeChain(chain: ChainDefinition, receipt: Receipt, threshold?: number): WorkflowResult {
   const ctx: ExecutionContext = {
     receipt,
     flags: [],
@@ -65,6 +73,14 @@ export function executeChain(chain: ChainDefinition, receipt: Receipt, threshold
     totalExpenses: 0,
     cashOutChannel: false,
     normalChannel: true,
+    lowChannel: false,
+    midChannel: false,
+    highChannel: false,
+    riskPassChannel: false,
+    riskWarnChannel: false,
+    riskFailChannel: false,
+    thresholdField: "",
+    thresholdValue: 0,
     ruleChecks: [],
     threshold: threshold ?? 80,
   };
@@ -107,7 +123,7 @@ export function executeChain(chain: ChainDefinition, receipt: Receipt, threshold
     itemIds: [],
   }).filter((b) => b.count > 0);
 
-  const result: PipelineResult = {
+  const result: WorkflowResult = {
     byCategory: ordered,
     totalExpenses: +ctx.totalExpenses.toFixed(2),
     totalItems: ctx.categorized.length,
@@ -197,6 +213,63 @@ function runModule(node: ChainNode, ctx: ExecutionContext): void {
         if (li.category) return li;
         const cat = inferCategory(li.description) || fallback;
         return { ...li, category: cat as ExpenseCategory };
+      });
+      return;
+    }
+    case "validation.abn": {
+      const requireAbn = node.params.requireAbn !== false;
+      const requireAustralian = node.params.requireAustralian === true;
+      const abnThreshold = Number(node.params.abnRequiredAbove ?? 82.5);
+      const total = ctx.receipt.total;
+      const country = (ctx.receipt.country ?? "AU").toUpperCase();
+      const abn = (ctx.receipt.abn ?? "").trim();
+      const isForeign = country !== "AU";
+      const isAu = country === "AU";
+      const totalRequiresAbn = total >= abnThreshold;
+
+      let abnMissing = false;
+      let foreignTrip = false;
+      let severity: PolicyFlag["severity"] = "info";
+      const reasons: string[] = [];
+
+      if (isForeign) {
+        if (requireAustralian) {
+          foreignTrip = true;
+          reasons.push(`Overseas supplier (${country})`);
+          severity = "error";
+        } else {
+          foreignTrip = true;
+          reasons.push(`Overseas supplier (${country})`);
+          if (severity === "info") severity = "warning";
+        }
+      }
+
+      if (isAu && requireAbn && totalRequiresAbn && !abn) {
+        abnMissing = true;
+        reasons.push(`Missing ABN on AU tax invoice over $${abnThreshold.toFixed(2)}`);
+        if (severity === "info") severity = "warning";
+      }
+
+      if (reasons.length > 0) {
+        ctx.flags.push({
+          rule: isForeign ? "validation.foreign" : "validation.abn",
+          message: `${ctx.receipt.merchant} — ${reasons.join("; ")}.`,
+          severity,
+          receiptId: ctx.receipt.id,
+        });
+      }
+
+      ctx.ruleChecks.push({
+        ruleId: "abn",
+        ruleName: "ABN / Foreign Supplier",
+        category: "validation",
+        passed: !foreignTrip && !abnMissing,
+        score: foreignTrip || abnMissing ? 0 : 1,
+        detail: reasons.length === 0
+          ? isAu
+            ? `AU supplier with ABN — $${total.toFixed(2)}`
+            : `Foreign supplier (${country}) allowed — $${total.toFixed(2)}`
+          : reasons.join("; "),
       });
       return;
     }
@@ -293,6 +366,65 @@ function runModule(node: ChainNode, ctx: ExecutionContext): void {
       ctx.normalChannel = value !== equals;
       return;
     }
+    case "logic.threshold": {
+      // Rule 1: Three-Way Amount Threshold
+      // Inputs number (receipt total / total field), outputs 3 options (< lower, lower..upper, >= upper)
+      const field = String(node.params.field ?? "total");
+      const lower = Number(node.params.lowerBound ?? node.params.lower ?? 50);
+      const upper = Number(node.params.upperBound ?? node.params.upper ?? 100);
+      const inclusive = node.params.inclusive !== false;
+      const raw = field === "total" ? ctx.receipt.total : (ctx as unknown as Record<string, unknown>)[field];
+      const value = typeof raw === "number" ? raw : Number(raw ?? NaN);
+      if (!Number.isFinite(value)) {
+        ctx.lowChannel = false;
+        ctx.midChannel = false;
+        ctx.highChannel = false;
+        return;
+      }
+      const isLow = inclusive ? value < lower : value <= lower;
+      const isHigh = inclusive ? value >= upper : value > upper;
+      ctx.lowChannel = isLow;
+      ctx.midChannel = !isLow && !isHigh;
+      ctx.highChannel = isHigh;
+      ctx.thresholdField = field;
+      ctx.thresholdValue = value;
+
+      const channel = isLow ? "below" : isHigh ? "above" : "between";
+      ctx.flags.push({
+        rule: "Threshold Splitter",
+        message: `Total $${value.toFixed(2)} -> channel '${channel}' (<$${lower}, $${lower}..$${upper}, >=$${upper})`,
+        severity: "info",
+        receiptId: ctx.receipt.id,
+      });
+      return;
+    }
+    case "logic.compliance_split": {
+      // Rule 2: Compliance Risk Level Splitter
+      // Inputs compliance score %, outputs 3 options (Pass >= warning, Review critical..warning, Fail < critical)
+      const passThreshold = Number(node.params.passThreshold ?? node.params.warningThreshold ?? 80);
+      const failThreshold = Number(node.params.failThreshold ?? node.params.criticalThreshold ?? 50);
+
+      const passedRules = ctx.ruleChecks.filter((r) => r.passed).length;
+      const totalRules = ctx.ruleChecks.length;
+      const scorePercentage = totalRules > 0 ? Math.round((passedRules / totalRules) * 100) : 100;
+
+      const isPass = scorePercentage >= passThreshold;
+      const isFail = scorePercentage < failThreshold;
+      const isReview = !isPass && !isFail;
+
+      ctx.riskPassChannel = isPass;
+      ctx.riskWarnChannel = isReview;
+      ctx.riskFailChannel = isFail;
+
+      const channel = isPass ? "pass" : isFail ? "fail" : "review";
+      ctx.flags.push({
+        rule: "Compliance Risk Splitter",
+        message: `Compliance score ${scorePercentage}% -> channel '${channel}' (Pass >=${passThreshold}%, Review ${failThreshold}..${passThreshold-1}%, Fail <${failThreshold}%)`,
+        severity: isPass ? "info" : isFail ? "error" : "warning",
+        receiptId: ctx.receipt.id,
+      });
+      return;
+    }
     case "logic.loop": {
       return;
     }
@@ -355,7 +487,7 @@ export function getAccountName(code: string): string {
 }
 
 export function generateJournalEntry(
-  result: PipelineResult,
+  result: WorkflowResult,
   receipt: Receipt,
   cashOutAccountCode: string = DEFAULT_CASH_OUT_ACCOUNT_CODE,
 ): JournalEntry | null {
@@ -428,7 +560,7 @@ export function topologicalOrder(nodes: ChainNode[], edges: ChainEdge[]): ChainN
   return order.length === nodes.length ? order : nodes;
 }
 
-export function buildResultSummary(moduleId: string, ctx: ExecutionContext, result: PipelineResult): string {
+export function buildResultSummary(moduleId: string, ctx: ExecutionContext, result: WorkflowResult): string {
   switch (moduleId) {
     case "input.receipt":
       return `${ctx.receipt.merchant} · $${ctx.receipt.total.toFixed(2)}`;
@@ -444,8 +576,24 @@ export function buildResultSummary(moduleId: string, ctx: ExecutionContext, resu
       return ctx.flags.length === 0
         ? "Compliant"
         : `${ctx.flags.length} flag${ctx.flags.length === 1 ? "" : "s"}`;
+    case "validation.abn": {
+      const country = (ctx.receipt.country ?? "AU").toUpperCase();
+      if (country !== "AU") return `${country} supplier — flagged`;
+      return (ctx.receipt.abn ?? "").trim() ? "ABN present" : "ABN missing";
+    }
     case "logic.ifthen":
       return ctx.cashOutChannel ? "Branch: cash-out" : "Branch: normal";
+    case "logic.threshold": {
+      const val = ctx.receipt.total;
+      if (ctx.lowChannel) return `Low (< $${Number(nodeParams(ctx, "lowerBound", 25))})`;
+      if (ctx.highChannel) return `High (≥ $${Number(nodeParams(ctx, "upperBound", 250))})`;
+      return `Mid ($${val.toFixed(2)})`;
+    }
+    case "logic.compliance_split": {
+      if (ctx.riskPassChannel) return "Pass (≥80%)";
+      if (ctx.riskWarnChannel) return "Review (50-79%)";
+      return "Fail (<50%)";
+    }
     case "logic.loop":
       return `Iterate × ${ctx.categorized.length}`;
     case "logic.aggregator":
@@ -455,4 +603,8 @@ export function buildResultSummary(moduleId: string, ctx: ExecutionContext, resu
     default:
       return "—";
   }
+}
+
+function nodeParams(ctx: ExecutionContext, key: string, fallback: number): number {
+  return fallback;
 }

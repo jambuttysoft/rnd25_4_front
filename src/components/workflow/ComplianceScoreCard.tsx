@@ -1,5 +1,5 @@
-import { usePipeline } from "../../state/PipelineContext";
-import type { ComplianceSummary, RuleCheck } from "../../types/pipeline";
+import { useWorkflow } from "../../state/WorkflowContext";
+import type { ComplianceSummary, RuleCheck } from "../../types/workflow";
 import type { CSSProperties } from "react";
 
 const styles: Record<string, CSSProperties> = {
@@ -186,7 +186,7 @@ function RuleRow({ rule }: { rule: RuleCheck }) {
 }
 
 export function ComplianceScoreCard({ summary }: ComplianceScoreCardProps) {
-  const { complianceThreshold } = usePipeline();
+  const { complianceThreshold } = useWorkflow();
   const { percentage, passedRules, totalRules, isCompliant, ruleChecks, threshold } = summary;
 
   const fillColor = isCompliant ? "var(--color-success)" : "var(--color-error)";

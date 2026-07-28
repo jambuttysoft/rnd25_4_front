@@ -1,8 +1,8 @@
-import { usePipeline } from "../../state/PipelineContext";
-import { CATEGORY_COLOR_VARS } from "../../types/pipeline";
+import { useWorkflow } from "../../state/WorkflowContext";
+import { CATEGORY_COLOR_VARS } from "../../types/workflow";
 import { AU } from "../../utils/format";
 import type { CSSProperties } from "react";
-import type { CategoryBucket, ExpenseCategory, PipelineResult } from "../../types/pipeline";
+import type { CategoryBucket, ExpenseCategory, WorkflowResult } from "../../types/workflow";
 import { ComplianceScoreCard } from "./ComplianceScoreCard";
 import { JournalEntryPanel } from "./JournalEntryPanel";
 import { ThresholdConfigurator } from "./ThresholdConfigurator";
@@ -228,7 +228,7 @@ function treemapGridFor(bucket: CategoryBucket, max: number): { col: number; row
 }
 
 export function ExpenseMap() {
-  const { lastResult, exportExpenseMap, selectedReceipt, runChain, nodes, isExecuting } = usePipeline();
+  const { lastResult, exportExpenseMap, selectedReceipt, runChain, nodes, isExecuting } = useWorkflow();
 
   if (!lastResult) {
     return (
@@ -316,7 +316,7 @@ export function ExpenseMap() {
         <div style={styles.summaryCard}>
           <span style={styles.summaryLabel}>Line items</span>
           <span style={styles.summaryValue}>{totalItems}</span>
-          <span style={styles.summarySub}>Categorised by pipeline</span>
+          <span style={styles.summarySub}>Categorised by workflow</span>
         </div>
         <div
           style={{

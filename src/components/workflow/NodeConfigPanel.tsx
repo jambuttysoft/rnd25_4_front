@@ -1,8 +1,8 @@
-import { usePipeline } from "../../state/PipelineContext";
-import { MODULES } from "../../data/pipelineModules";
-import { CATEGORY_COLOR_VARS, EXPENSE_CATEGORIES } from "../../types/pipeline";
+import { useWorkflow } from "../../state/WorkflowContext";
+import { MODULES } from "../../data/workflowModules";
+import { CATEGORY_COLOR_VARS, EXPENSE_CATEGORIES } from "../../types/workflow";
 import type { CSSProperties } from "react";
-import type { ModuleId, ParamField, Receipt } from "../../types/pipeline";
+import type { ModuleId, ParamField, Receipt } from "../../types/workflow";
 
 const styles: Record<string, CSSProperties> = {
   wrap: {
@@ -177,7 +177,7 @@ const styles: Record<string, CSSProperties> = {
 };
 
 export function NodeConfigPanel() {
-  const { nodes, selectedNodeId, updateNodeParams, removeNode, selectedReceipt, lastResult } = usePipeline();
+  const { nodes, selectedNodeId, updateNodeParams, removeNode, selectedReceipt, lastResult } = useWorkflow();
   const node = nodes.find((n) => n.id === selectedNodeId) ?? null;
   const mod = node ? MODULES[node.data.moduleId as ModuleId] : null;
 

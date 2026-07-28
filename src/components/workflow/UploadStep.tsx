@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, type ChangeEvent, type DragEvent } from "react";
-import { usePipeline } from "../../state/PipelineContext";
+import { useWorkflow } from "../../state/WorkflowContext";
 import { StatusIndicator } from "../StatusIndicator";
 import { AU } from "../../utils/format";
 import type { CSSProperties } from "react";
@@ -214,7 +214,7 @@ const SAMPLE_FILES = [
 ];
 
 export function UploadStep() {
-  const { uploadReceipt, receipts, selectedReceiptId, selectReceipt, developmentMode } = usePipeline();
+  const { uploadReceipt, receipts, selectedReceiptId, selectReceipt, developmentMode } = useWorkflow();
   const [hover, setHover] = useState(false);
   const [busy, setBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);

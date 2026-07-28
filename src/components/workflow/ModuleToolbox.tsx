@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { usePipeline } from "../../state/PipelineContext";
-import { MODULE_LIST } from "../../data/pipelineModules";
-import type { ModuleDefinition, ModuleType } from "../../types/pipeline";
+import { useWorkflow } from "../../state/WorkflowContext";
+import { MODULE_LIST } from "../../data/workflowModules";
+import type { ModuleDefinition, ModuleType } from "../../types/workflow";
 import type { CSSProperties } from "react";
 
 const styles: Record<string, CSSProperties> = {
@@ -125,7 +125,7 @@ const TYPE_META: Record<ModuleType, { color: string; label: string; bg: string }
 const TYPE_ORDER: ModuleType[] = ["input", "validation", "logic", "output"];
 
 export function ModuleToolbox() {
-  const { addModuleNode, nodes, loadPresetChain } = usePipeline();
+  const { addModuleNode, nodes, loadPresetChain } = useWorkflow();
   const [dragId, setDragId] = useState<string | null>(null);
 
   const grouped = TYPE_ORDER.map((t) => ({
@@ -181,6 +181,7 @@ export function ModuleToolbox() {
                 type="button"
                 onClick={() => handleAdd(mod)}
                 onDragStart={(e) => {
+                  e.dataTransfer.setData("application/x-workflow-module", mod.id);
                   e.dataTransfer.setData("application/x-pipeline-module", mod.id);
                   e.dataTransfer.effectAllowed = "copy";
                   setDragId(mod.id);

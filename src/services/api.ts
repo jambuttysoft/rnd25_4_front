@@ -37,9 +37,11 @@ export async function policyCheck(receipt: any) {
   return apiPost('/rag/policy-check', { receipt }) as Promise<{ flags: any[]; ruleChecks: any[]; categories: any[] }>;
 }
 
-export async function runPipeline(receipt: any, threshold?: number) {
-  return apiPost('/pipeline/run', { receipt, threshold }) as Promise<{ result: any }>;
+export async function runWorkflow(receipt: any, threshold?: number) {
+  return apiPost('/workflow/run', { receipt, threshold }) as Promise<{ result: any }>;
 }
+
+export const runPipeline = runWorkflow;
 
 export async function healthCheck() {
   return apiGet('/health') as Promise<{ status: string; timestamp: string; development?: boolean }>;

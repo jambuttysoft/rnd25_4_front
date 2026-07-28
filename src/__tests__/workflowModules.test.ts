@@ -5,9 +5,8 @@ import {
   makeReceiptFromTemplate,
   MODULES,
   MODULE_LIST,
-} from "../data/pipelineModules";
-import type { ModuleId } from "../types/pipeline";
-
+} from "../data/workflowModules";
+import type { ModuleId } from "../types/workflow";
 
 describe("inferCategory", () => {
   it("should infer Fuel category", () => {
@@ -66,7 +65,6 @@ describe("inferCategory", () => {
   });
 });
 
-
 describe("pickReceiptTemplate", () => {
   it("should return known template for ampol receipt", () => {
     const t = pickReceiptTemplate("ampol-receipt-2026-07-12.jpg");
@@ -107,7 +105,6 @@ describe("pickReceiptTemplate", () => {
     expect(t1.lineItems.length).toBeGreaterThan(0);
   });
 });
-
 
 describe("makeReceiptFromTemplate", () => {
   it("should create receipt with correct structure", () => {
@@ -157,15 +154,16 @@ describe("makeReceiptFromTemplate", () => {
   });
 });
 
-
 describe("MODULES", () => {
-  it("should have all 8 module types", () => {
+  it("should have all module types including 3-way logic rules", () => {
     const expectedIds: ModuleId[] = [
       "input.receipt",
       "validation.cashout",
       "validation.categorize",
       "validation.policy",
       "logic.ifthen",
+      "logic.threshold",
+      "logic.compliance_split",
       "logic.loop",
       "logic.aggregator",
       "output.expenseMap",
@@ -176,8 +174,8 @@ describe("MODULES", () => {
     }
   });
 
-  it("should have MODULE_LIST with 8 entries", () => {
-    expect(MODULE_LIST).toHaveLength(8);
+  it("should have MODULE_LIST with 11 entries", () => {
+    expect(MODULE_LIST).toHaveLength(11);
   });
 
   it("each module should have required fields", () => {
@@ -199,5 +197,13 @@ describe("MODULES", () => {
 
   it("output module should have 0 outputs", () => {
     expect(MODULES["output.expenseMap"].outputs).toBe(0);
+  });
+
+  it("3-way threshold rule module should have 3 outputs", () => {
+    expect(MODULES["logic.threshold"].outputs).toBe(3);
+  });
+
+  it("3-way compliance split rule module should have 3 outputs", () => {
+    expect(MODULES["logic.compliance_split"].outputs).toBe(3);
   });
 });

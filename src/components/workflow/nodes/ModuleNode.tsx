@@ -1,6 +1,6 @@
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { MODULES } from "../../../data/pipelineModules";
-import type { ModuleId, ModuleType, PipelineNodeData, NodeStatus } from "../../../types/pipeline";
+import { MODULES } from "../../../data/workflowModules";
+import type { ModuleId, ModuleType, WorkflowNodeData, NodeStatus } from "../../../types/workflow";
 import type { CSSProperties } from "react";
 
 const TYPE_COLOR: Record<ModuleType, { fg: string; bg: string; ink: string; border: string }> = {
@@ -122,11 +122,11 @@ const styles: Record<string, CSSProperties> = {
   },
 };
 
-export type ModuleNode = Node<PipelineNodeData, "module">;
+export type ModuleNode = Node<WorkflowNodeData, "module">;
 
 export function ModuleNodeComponent(props: NodeProps<ModuleNode>) {
   const { data, selected } = props;
-  const mod = MODULES[data.moduleId as ModuleId];
+  const mod = MODULES[data.moduleId as ModuleId] ?? MODULES["input.receipt"];
   const colors = TYPE_COLOR[mod.type];
   const status = (data.status as NodeStatus) ?? "idle";
 
@@ -180,7 +180,7 @@ export function ModuleNodeComponent(props: NodeProps<ModuleNode>) {
           type="source"
           position={Position.Right}
           id="out"
-          style={{ ...styles.handle, top: "50%" }}
+          style={{ ...styles.handle, top: mod.outputs >= 3 ? "25%" : "50%" }}
         />
       )}
       {mod.outputs >= 2 && (
@@ -188,7 +188,15 @@ export function ModuleNodeComponent(props: NodeProps<ModuleNode>) {
           type="source"
           position={Position.Right}
           id="out-false"
-          style={{ ...styles.handle, top: "70%" }}
+          style={{ ...styles.handle, top: mod.outputs >= 3 ? "55%" : "70%" }}
+        />
+      )}
+      {mod.outputs >= 3 && (
+        <Handle
+          type="source"
+          position={Position.Right}
+          id="out-high"
+          style={{ ...styles.handle, top: "85%" }}
         />
       )}
     </div>

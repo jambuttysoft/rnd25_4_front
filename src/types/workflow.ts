@@ -58,6 +58,12 @@ export interface Receipt {
   changeAmount?: number;
   /** Amount actually paid by card. 0 if paid in cash only. Often equals total for card-only payment. */
   paidByCard?: number;
+  /** ISO 3166-1 alpha-2 country code of the supplier. "AU" by default. */
+  country?: string;
+  /** Australian Business Number (11-digit). Required for AU tax invoices over $82.50. */
+  abn?: string;
+  /** Currency code the receipt was issued in. "AUD" by default. */
+  currency?: string;
 }
 
 export type ModuleType = "input" | "validation" | "logic" | "output";
@@ -67,7 +73,10 @@ export type ModuleId =
   | "validation.cashout"
   | "validation.categorize"
   | "validation.policy"
+  | "validation.abn"
   | "logic.ifthen"
+  | "logic.threshold"
+  | "logic.compliance_split"
   | "logic.loop"
   | "logic.aggregator"
   | "output.expenseMap";
@@ -93,7 +102,7 @@ export interface ParamField {
   defaultValue?: unknown;
 }
 
-export interface PipelineNodeData {
+export interface WorkflowNodeData {
   moduleId: ModuleId;
   label: string;
   params: Record<string, unknown>;
@@ -101,6 +110,8 @@ export interface PipelineNodeData {
   resultSummary?: string;
   [key: string]: unknown;
 }
+
+export type PipelineNodeData = WorkflowNodeData;
 
 export type NodeStatus = "idle" | "running" | "success" | "error" | "skipped";
 
@@ -111,7 +122,7 @@ export interface CategoryBucket {
   itemIds: string[];
 }
 
-export interface PipelineResult {
+export interface WorkflowResult {
   byCategory: CategoryBucket[];
   totalExpenses: number;
   totalItems: number;
@@ -125,6 +136,8 @@ export interface PipelineResult {
   complianceSummary: ComplianceSummary;
   journalEntry: JournalEntry | null;
 }
+
+export type PipelineResult = WorkflowResult;
 
 export interface PolicyFlag {
   rule: string;
@@ -173,7 +186,7 @@ export interface ComplianceSummary {
   ruleChecks: RuleCheck[];
 }
 
-export interface PipelineTemplateNode {
+export interface WorkflowTemplateNode {
   id: string;
   moduleId: ModuleId;
   label: string;
@@ -181,20 +194,26 @@ export interface PipelineTemplateNode {
   position: { x: number; y: number };
 }
 
-export interface PipelineTemplateEdge {
+export type PipelineTemplateNode = WorkflowTemplateNode;
+
+export interface WorkflowTemplateEdge {
   source: string;
   target: string;
   sourceHandle?: string;
   targetHandle?: string;
 }
 
-export interface PipelineTemplate {
+export type PipelineTemplateEdge = WorkflowTemplateEdge;
+
+export interface WorkflowTemplate {
   id: string;
   name: string;
   description: string;
-  nodes: PipelineTemplateNode[];
-  edges: PipelineTemplateEdge[];
+  nodes: WorkflowTemplateNode[];
+  edges: WorkflowTemplateEdge[];
   isBuiltIn: boolean;
   createdAt: string;
   updatedAt: string;
 }
+
+export type PipelineTemplate = WorkflowTemplate;

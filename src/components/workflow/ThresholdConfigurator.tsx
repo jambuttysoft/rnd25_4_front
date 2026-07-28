@@ -1,4 +1,4 @@
-import { usePipeline } from "../../state/PipelineContext";
+import { useWorkflow } from "../../state/WorkflowContext";
 import type { CSSProperties, ChangeEvent } from "react";
 
 const PRESETS = [70, 80, 90, 100] as const;
@@ -142,7 +142,7 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export function ThresholdConfigurator() {
-  const { complianceThreshold, setComplianceThreshold } = usePipeline();
+  const { complianceThreshold, setComplianceThreshold } = useWorkflow();
   const value = clamp(complianceThreshold, 0, 100);
 
   const onSliderChange = (e: ChangeEvent<HTMLInputElement>) => {

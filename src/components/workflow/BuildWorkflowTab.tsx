@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
-import { UploadStep } from "./UploadStep";
-import { ReceiptDetail } from "./ReceiptDetail";
+import { ModuleToolbox } from "./ModuleToolbox";
+import { WorkflowCanvas } from "./WorkflowCanvas";
+import { NodeConfigPanel } from "./NodeConfigPanel";
+import { TemplateManager } from "./TemplateManager";
+import { WorkflowResultsPanel } from "./WorkflowResultsPanel";
 import type { CSSProperties } from "react";
 
 const styles: Record<string, CSSProperties> = {
@@ -38,11 +41,12 @@ const styles: Record<string, CSSProperties> = {
     lineHeight: 1.6,
     maxWidth: 720,
   },
-  topGrid: {
+  builderGrid: {
     display: "grid",
-    gridTemplateColumns: "minmax(0, 1.05fr) minmax(0, 1fr)",
-    gap: "var(--space-6)",
-    alignItems: "start",
+    gridTemplateColumns: "minmax(220px, 260px) minmax(0, 1fr) minmax(260px, 300px)",
+    gridAutoRows: "minmax(640px, auto)",
+    gap: "var(--space-5)",
+    alignItems: "stretch",
   },
   nextStep: {
     display: "flex",
@@ -94,34 +98,40 @@ const styles: Record<string, CSSProperties> = {
   },
 };
 
-export function UploadReceiptTab() {
+export function BuildWorkflowTab() {
   return (
     <div style={styles.wrap}>
       <div style={styles.intro}>
-        <span style={styles.eyebrow}>Step 01 — Upload &amp; Inspect</span>
-        <h2 style={styles.title}>Capture a receipt</h2>
+        <span style={styles.eyebrow}>Step 02 — Compose &amp; Configure</span>
+        <h2 style={styles.title}>Build the workflow</h2>
         <p style={styles.lede}>
-          Drop a receipt image or generate a sample. OCR runs through six progressive
-          stages — text region detection, entity extraction, line-item cross-check — and
-          saves the structured payload in browser memory. Select a receipt to feed into
-          the pipeline.
+          Drag modules from the toolbox onto the canvas, wire them together, and tune
+          the parameters of each node. Load a template below for a working baseline,
+          or assemble your own verification flow and save it for later.
         </p>
       </div>
 
-      <div style={styles.topGrid}>
-        <UploadStep />
-        <ReceiptDetail />
+      <div style={styles.builderGrid}>
+        <ModuleToolbox />
+        <WorkflowCanvas />
+        <NodeConfigPanel />
       </div>
+
+      <WorkflowResultsPanel />
+
+      <TemplateManager />
 
       <div style={styles.nextStep}>
         <div style={styles.nextStepText}>
           <span style={styles.nextStepLabel}>Next step</span>
-          <span style={styles.nextStepTitle}>Build the verification pipeline</span>
+          <span style={styles.nextStepTitle}>Run the chain and view the expense map</span>
         </div>
-        <Link to="/build" style={styles.nextStepBtn}>
-          Continue to Build →
+        <Link to="/map" style={styles.nextStepBtn}>
+          Continue to Map →
         </Link>
       </div>
     </div>
   );
 }
+
+export const BuildPipelineTab = BuildWorkflowTab;

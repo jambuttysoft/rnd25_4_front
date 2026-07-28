@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from "react-router-dom";
-import { PipelineProvider } from "./state/PipelineContext";
-import { UploadReceiptTab } from "./components/pipeline/UploadReceiptTab";
-import { BuildPipelineTab } from "./components/pipeline/BuildPipelineTab";
-import { ViewExpenseMapTab } from "./components/pipeline/ViewExpenseMapTab";
+import { WorkflowProvider } from "./state/WorkflowContext";
+import { UploadReceiptTab } from "./components/workflow/UploadReceiptTab";
+import { BuildWorkflowTab } from "./components/workflow/BuildWorkflowTab";
+import { ViewExpenseMapTab } from "./components/workflow/ViewExpenseMapTab";
 import { StatusIndicator } from "./components/StatusIndicator";
 import { AU } from "./utils/format";
 import type { CSSProperties } from "react";
@@ -215,7 +215,7 @@ const styles: Record<string, CSSProperties> = {
 
 const TABS = [
   { to: "/upload", num: "01", label: "Upload Receipt", subtitle: "Capture & OCR" },
-  { to: "/build", num: "02", label: "Build Pipeline", subtitle: "Compose & configure" },
+  { to: "/build", num: "02", label: "Build Workflow", subtitle: "Compose & configure" },
   { to: "/map", num: "03", label: "View Expense Map", subtitle: "Review & export" },
 ] as const;
 
@@ -268,7 +268,7 @@ function Shell() {
           <div style={styles.brandMark}>R&amp;D</div>
           <div style={styles.brandText}>
             <div style={styles.brandTitle}>Financial Document Verification</div>
-            <div style={styles.brandSub}>VISUAL PIPELINE · JUNE 2025 · 04</div>
+            <div style={styles.brandSub}>VISUAL WORKFLOW · JUNE 2025 · 04</div>
           </div>
         </div>
         <div style={styles.topMeta}>
@@ -294,7 +294,7 @@ function Shell() {
         <Routes>
           <Route path="/" element={<Navigate to="/upload" replace />} />
           <Route path="/upload" element={<UploadReceiptTab />} />
-          <Route path="/build" element={<BuildPipelineTab />} />
+          <Route path="/build" element={<BuildWorkflowTab />} />
           <Route path="/map" element={<ViewExpenseMapTab />} />
           <Route path="*" element={<Navigate to="/upload" replace />} />
         </Routes>
@@ -305,7 +305,7 @@ function Shell() {
           <div style={styles.footerBrandCol}>
             <span style={styles.footerBrandName}>totalflow</span>
             <span style={styles.footerEngineName}>Financial Document Verification Engine</span>
-            <span style={styles.footerPlatform}>VSUAL PIPELINE</span>
+            <span style={styles.footerPlatform}>VISUAL WORKFLOW</span>
           </div>
           <div style={styles.footerRightCol}>
             <span style={styles.footerProgramme}>Research Programme • R&amp;D 2025</span>
@@ -321,9 +321,9 @@ function Shell() {
 export default function App() {
   return (
     <BrowserRouter>
-      <PipelineProvider>
+      <WorkflowProvider>
         <Shell />
-      </PipelineProvider>
+      </WorkflowProvider>
     </BrowserRouter>
   );
 }

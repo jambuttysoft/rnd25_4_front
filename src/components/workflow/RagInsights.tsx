@@ -1,9 +1,9 @@
 import type { CSSProperties } from "react";
 import { useMemo } from "react";
-import { usePipeline } from "../../state/PipelineContext";
+import { useWorkflow } from "../../state/WorkflowContext";
 import { ragData, type Difficulty, type QueryResult } from "../../data/ragData";
 import { AU } from "../../utils/format";
-import type { ExpenseCategory } from "../../types/pipeline";
+import type { ExpenseCategory } from "../../types/workflow";
 
 const CATEGORY_QUERY_KEYWORDS: Record<ExpenseCategory, string[]> = {
   Fuel: ["fuel", "car", "transport", "drive", "petrol", "gas", "vehicle"],
@@ -703,7 +703,7 @@ function QueryCard({ q, matchingCategories }: { q: QueryResult; matchingCategori
 }
 
 export function RagInsights() {
-  const { selectedReceipt, lastResult } = usePipeline();
+  const { selectedReceipt, lastResult } = useWorkflow();
 
   const receiptCategories = useMemo<ExpenseCategory[]>(() => {
     if (!lastResult?.byCategory) return [];

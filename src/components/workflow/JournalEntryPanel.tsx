@@ -1,7 +1,7 @@
-import { usePipeline } from "../../state/PipelineContext";
-import type { JournalEntry, JournalEntryLine } from "../../types/pipeline";
+import { useWorkflow } from "../../state/WorkflowContext";
+import type { JournalEntry, JournalEntryLine } from "../../types/workflow";
 import { AU } from "../../utils/format";
-import { getAccountName } from "../../utils/pipeline/execute";
+import { getAccountName } from "../../utils/workflow/execute";
 import type { CSSProperties } from "react";
 
 const styles: Record<string, CSSProperties> = {
@@ -258,13 +258,13 @@ function EntryRow({
 }
 
 export function JournalEntryPanel() {
-  const { lastResult, exportJournalEntry } = usePipeline();
+  const { lastResult, exportJournalEntry } = useWorkflow();
   const journalEntry: JournalEntry | null = lastResult?.journalEntry ?? null;
   const isCompliant = lastResult?.complianceSummary.isCompliant ?? false;
   const compliance = lastResult?.complianceSummary;
   const pendingReason = !isCompliant
     ? `Compliance score ${compliance?.percentage ?? 0}% is below the ${compliance?.threshold ?? 0}% threshold.`
-    : "No journal entry was returned by the pipeline.";
+    : "No journal entry was returned by the workflow.";
 
   if (!journalEntry || !isCompliant) {
     return (

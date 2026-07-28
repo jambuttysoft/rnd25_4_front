@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, KeyboardEvent } from "react";
-import { usePipeline } from "../../state/PipelineContext";
-import type { PipelineTemplate } from "../../types/pipeline";
+import { useWorkflow } from "../../state/WorkflowContext";
+import type { WorkflowTemplate } from "../../types/workflow";
 
 const styles: Record<string, CSSProperties> = {
   wrap: {
@@ -395,7 +395,7 @@ function LoadIcon() {
 }
 
 interface TemplateCardProps {
-  template: PipelineTemplate;
+  template: WorkflowTemplate;
   index: number;
   onLoad: () => void;
   onRename: (newName: string) => void;
@@ -539,7 +539,7 @@ function TemplateCard({ template, index, onLoad, onRename, onDelete }: TemplateC
 }
 
 export function TemplateManager() {
-  const { templates, nodes, loadTemplate, saveTemplate, renameTemplate, deleteTemplate } = usePipeline();
+  const { templates, nodes, loadTemplate, saveTemplate, renameTemplate, deleteTemplate } = useWorkflow();
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [saveName, setSaveName] = useState("");
   const [saveDescription, setSaveDescription] = useState("");
@@ -610,7 +610,7 @@ export function TemplateManager() {
       <div style={styles.header}>
         <div style={styles.headerText}>
           <span style={styles.stepBadge}>LIBRARY · TEMPLATES</span>
-          <h3 style={styles.title}>Pipeline templates</h3>
+          <h3 style={styles.title}>Workflow templates</h3>
           <p style={styles.subtitle}>
             Save the current canvas as a reusable template, or load a preset to
             jump-start a new verification chain. Built-in templates are protected
@@ -629,7 +629,7 @@ export function TemplateManager() {
               ...styles.saveBtn,
               ...(nodes.length === 0 ? styles.saveBtnDisabled : {}),
             }}
-            title={nodes.length === 0 ? "Add modules to the canvas first" : "Save current pipeline as a template"}
+            title={nodes.length === 0 ? "Add modules to the canvas first" : "Save current workflow as a template"}
           >
             <PlusIcon />
             <span>Save current</span>
@@ -685,7 +685,7 @@ export function TemplateManager() {
                 type="text"
                 value={saveDescription}
                 onChange={(e) => setSaveDescription(e.target.value)}
-                placeholder="What does this pipeline do?"
+                placeholder="What does this workflow do?"
                 style={styles.textInput}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSave();
@@ -745,8 +745,8 @@ export function TemplateManager() {
         {userTemplates.length === 0 ? (
           <div style={styles.empty}>
             {nodes.length === 0
-              ? "Build a pipeline on the canvas, then click Save current to capture it here."
-              : "No saved templates yet. Click Save current to keep this pipeline for later."}
+              ? "Build a workflow on the canvas, then click Save current to capture it here."
+              : "No saved templates yet. Click Save current to keep this workflow for later."}
           </div>
         ) : (
           <div style={styles.grid}>

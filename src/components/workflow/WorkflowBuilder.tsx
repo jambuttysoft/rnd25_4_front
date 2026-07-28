@@ -1,7 +1,7 @@
 import { UploadStep } from "./UploadStep";
 import { ReceiptDetail } from "./ReceiptDetail";
 import { ModuleToolbox } from "./ModuleToolbox";
-import { PipelineCanvas } from "./PipelineCanvas";
+import { WorkflowCanvas } from "./WorkflowCanvas";
 import { NodeConfigPanel } from "./NodeConfigPanel";
 import { ExpenseMap } from "./ExpenseMap";
 import type { CSSProperties } from "react";
@@ -62,21 +62,21 @@ const styles: Record<string, CSSProperties> = {
 };
 
 /**
- * Layout-only compositing view of the full pipeline.
+ * Layout-only compositing view of the full workflow.
  *
  * The active app shell (see app.tsx) splits this into three routed tabs:
  *   /upload → UploadReceiptTab (uses UploadStep + ReceiptDetail)
- *   /build  → BuildPipelineTab (uses ModuleToolbox + PipelineCanvas + NodeConfigPanel)
+ *   /build  → BuildWorkflowTab (uses ModuleToolbox + WorkflowCanvas + NodeConfigPanel)
  *   /map    → ViewExpenseMapTab (uses ExpenseMap)
  *
- * The PipelineProvider must be an ancestor of this component.
+ * The WorkflowProvider must be an ancestor of this component.
  * It is mounted at the App root so all three tabs share state.
  */
-export function PipelineBuilder() {
+export function WorkflowBuilder() {
   return (
     <div style={styles.wrap}>
       <div style={styles.intro}>
-        <span style={styles.eyebrow}>Visual Pipeline · Full Layout</span>
+        <span style={styles.eyebrow}>Visual Workflow · Full Layout</span>
         <h2 style={styles.title}>Document verification, end to end</h2>
         <p style={styles.lede}>
           Upload a receipt, run it through a custom chain of validations and logic gates,
@@ -92,7 +92,7 @@ export function PipelineBuilder() {
 
       <div style={styles.builderGrid}>
         <ModuleToolbox />
-        <PipelineCanvas />
+        <WorkflowCanvas />
         <NodeConfigPanel />
       </div>
 
@@ -102,3 +102,5 @@ export function PipelineBuilder() {
     </div>
   );
 }
+
+export const PipelineBuilder = WorkflowBuilder;

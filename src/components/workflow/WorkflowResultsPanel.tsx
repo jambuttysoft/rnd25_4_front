@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import { usePipeline } from "../../state/PipelineContext";
-import { CATEGORY_COLOR_VARS } from "../../types/pipeline";
+import { useWorkflow } from "../../state/WorkflowContext";
+import { CATEGORY_COLOR_VARS } from "../../types/workflow";
 import { AU } from "../../utils/format";
-import type { ExpenseCategory, PipelineResult } from "../../types/pipeline";
+import type { ExpenseCategory, WorkflowResult } from "../../types/workflow";
 
 const styles: Record<string, CSSProperties> = {
   wrap: {
@@ -247,7 +247,7 @@ const styles: Record<string, CSSProperties> = {
 };
 
 const ENTER_KEYFRAMES = `
-@keyframes pipelineResultsEnter {
+@keyframes workflowResultsEnter {
   from {
     opacity: 0;
     transform: translateY(-10px);
@@ -257,8 +257,8 @@ const ENTER_KEYFRAMES = `
     transform: translateY(0);
   }
 }
-.pipeline-results-enter {
-  animation: pipelineResultsEnter 420ms var(--ease-out) both;
+.workflow-results-enter {
+  animation: workflowResultsEnter 420ms var(--ease-out) both;
 }
 `;
 
@@ -266,7 +266,7 @@ function LoadingPanel() {
   return (
     <div style={styles.loadingWrap} aria-live="polite">
       <div style={styles.loadingText}>
-        <span style={styles.eyebrow}>Running pipeline</span>
+        <span style={styles.eyebrow}>Running workflow</span>
         <span style={styles.loadingTitle}>Processing the chain…</span>
         <span style={styles.loadingSub}>Categorising, validating, aggregating.</span>
       </div>
@@ -275,7 +275,7 @@ function LoadingPanel() {
   );
 }
 
-function ResultsPanel({ result }: { result: PipelineResult }) {
+function ResultsPanel({ result }: { result: WorkflowResult }) {
   const { byCategory, totalExpenses, totalItems, policyFlags, cashOutDetected, cashOutReason, receiptId } = result;
   const max = useMemo(
     () => Math.max(...byCategory.map((b) => b.total), 0.01),
@@ -285,7 +285,7 @@ function ResultsPanel({ result }: { result: PipelineResult }) {
   return (
     <div
       key={receiptId}
-      className="pipeline-results-enter"
+      className="workflow-results-enter"
       style={styles.wrap}
       data-receipt-id={receiptId}
     >
@@ -294,7 +294,7 @@ function ResultsPanel({ result }: { result: PipelineResult }) {
       <div style={styles.header}>
         <div style={styles.headerText}>
           <span style={styles.eyebrow}>Inline results · last run</span>
-          <h3 style={styles.title}>Pipeline summary</h3>
+          <h3 style={styles.title}>Workflow summary</h3>
           <span style={styles.subtitle}>
             Compact preview of the last chain execution. Open the expense map for the
             full treemap, per-item drilldown, and JSON export.
@@ -484,11 +484,13 @@ function ResultsPanel({ result }: { result: PipelineResult }) {
   );
 }
 
-export function PipelineResultsPanel() {
-  const { lastResult, isExecuting } = usePipeline();
+export function WorkflowResultsPanel() {
+  const { lastResult, isExecuting } = useWorkflow();
 
   if (!lastResult && !isExecuting) return null;
   if (!lastResult) return <LoadingPanel />;
 
   return <ResultsPanel result={lastResult} />;
 }
+
+export const PipelineResultsPanel = WorkflowResultsPanel;

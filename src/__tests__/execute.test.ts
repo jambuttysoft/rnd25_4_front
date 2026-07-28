@@ -9,8 +9,8 @@ import {
   type ChainEdge,
   type ChainDefinition,
   type ExecutionContext,
-} from "../utils/pipeline/execute";
-import type { Receipt, PipelineResult } from "../types/pipeline";
+} from "../utils/workflow/execute";
+import type { Receipt, WorkflowResult } from "../types/workflow";
 
 
 function makeReceipt(overrides: Partial<Receipt> = {}): Receipt {
@@ -576,6 +576,11 @@ describe("buildResultSummary", () => {
     totalExpenses: 38.0,
     cashOutChannel: false,
     normalChannel: true,
+    lowChannel: false,
+    midChannel: false,
+    highChannel: false,
+    thresholdField: "",
+    thresholdValue: 0,
     ruleChecks: [],
     threshold: 80,
   };
@@ -748,5 +753,44 @@ describe("computeCashOutAmount", () => {
         cardFeeAmount: 0,
       }),
     ).toBe(0);
+  });
+});
+
+
+describe("Three-way logical rules (logic.threshold & logic.compliance_split)", () => {
+  it("logic.threshold routes < lowerBound, between lower & upper, and >= upperBound", () => {
+    const chainLow = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n2", moduleId: "logic.threshold", params: { lowerBound: 50, upperBound: 100 } },
+    ]);
+    const receiptLow = makeReceipt({ total: 30 });
+    const resultLow = executeChain(chainLow, receiptLow);
+    expect(resultLow.policyFlags.some((f) => f.rule === "Threshold Splitter" && f.message.includes("channel 'below'"))).toBe(true);
+
+    const chainMid = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n2", moduleId: "logic.threshold", params: { lowerBound: 50, upperBound: 100 } },
+    ]);
+    const receiptMid = makeReceipt({ total: 75 });
+    const resultMid = executeChain(chainMid, receiptMid);
+    expect(resultMid.policyFlags.some((f) => f.rule === "Threshold Splitter" && f.message.includes("channel 'between'"))).toBe(true);
+
+    const chainHigh = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n2", moduleId: "logic.threshold", params: { lowerBound: 50, upperBound: 100 } },
+    ]);
+    const receiptHigh = makeReceipt({ total: 150 });
+    const resultHigh = executeChain(chainHigh, receiptHigh);
+    expect(resultHigh.policyFlags.some((f) => f.rule === "Threshold Splitter" && f.message.includes("channel 'above'"))).toBe(true);
+  });
+
+  it("logic.compliance_split routes Pass (>=passThreshold), Review (failThreshold..passThreshold), Fail (<failThreshold)", () => {
+    const chainPass = makeSimpleChain([
+      { id: "n1", moduleId: "input.receipt" },
+      { id: "n2", moduleId: "logic.compliance_split", params: { passThreshold: 80, failThreshold: 50 } },
+    ]);
+    const receipt = makeReceipt();
+    const resultPass = executeChain(chainPass, receipt);
+    expect(resultPass.policyFlags.some((f) => f.rule === "Compliance Risk Splitter")).toBe(true);
   });
 });

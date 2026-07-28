@@ -212,7 +212,7 @@ export function Experiment1Parser({ status, onRun, onComplete }: Experiment1Prop
           description={parserData.description}
           aside={
             <>
-              <StatusIndicator status={status} label="Parser pipeline" />
+              <StatusIndicator status={status} label="Parser workflow" />
               <RunButton
                 onClick={handleRun}
                 running={status === "running"}

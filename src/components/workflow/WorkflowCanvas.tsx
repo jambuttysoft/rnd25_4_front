@@ -8,7 +8,7 @@ import {
   MiniMap,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { usePipeline } from "../../state/PipelineContext";
+import { useWorkflow } from "../../state/WorkflowContext";
 import { ModuleNodeComponent, type ModuleNode } from "./nodes/ModuleNode";
 import { RunButton } from "../RunButton";
 import { StatusIndicator } from "../StatusIndicator";
@@ -122,7 +122,7 @@ const styles: Record<string, CSSProperties> = {
 
 const nodeTypes = { module: ModuleNodeComponent };
 
-function PipelineCanvasInner() {
+function WorkflowCanvasInner() {
   const {
     nodes,
     edges,
@@ -136,12 +136,12 @@ function PipelineCanvasInner() {
     clearChain,
     isExecuting,
     selectedReceipt,
-  } = usePipeline();
+  } = useWorkflow();
   const rfRef = useRef<{ screenToFlowPosition: (pos: { x: number; y: number }) => { x: number; y: number } } | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
   const onDragOver = useCallback((e: DragEvent) => {
-    if (e.dataTransfer.types.includes("application/x-pipeline-module")) {
+    if (e.dataTransfer.types.includes("application/x-pipeline-module") || e.dataTransfer.types.includes("application/x-workflow-module")) {
       e.preventDefault();
       e.dataTransfer.dropEffect = "copy";
     }
@@ -149,7 +149,7 @@ function PipelineCanvasInner() {
 
   const onDrop = useCallback(
     (e: DragEvent) => {
-      const moduleId = e.dataTransfer.getData("application/x-pipeline-module");
+      const moduleId = e.dataTransfer.getData("application/x-workflow-module") || e.dataTransfer.getData("application/x-pipeline-module");
       if (!moduleId) return;
       e.preventDefault();
       const bounds = wrapRef.current?.getBoundingClientRect();
@@ -182,7 +182,7 @@ function PipelineCanvasInner() {
       <div style={styles.header}>
         <div style={styles.headerText}>
           <span style={styles.stepBadge}>STEP 03 — VISUAL CHAIN BUILDER</span>
-          <h3 style={styles.title}>Pipeline canvas</h3>
+          <h3 style={styles.title}>Workflow canvas</h3>
           <span style={styles.subtitle}>
             Drag modules from the toolbox, wire handles, then run the chain.
           </span>
@@ -276,7 +276,7 @@ function PipelineCanvasInner() {
         {nodes.length === 0 && (
           <div style={styles.empty}>
             <div style={styles.emptyInner}>
-              <div style={styles.emptyTitle}>Empty pipeline</div>
+              <div style={styles.emptyTitle}>Empty workflow</div>
               <div>
                 Drag a module from the toolbox, or click{" "}
                 <strong style={{ color: "var(--color-ink-strong)" }}>Load preset chain</strong>{" "}
@@ -314,10 +314,12 @@ function PipelineCanvasInner() {
   );
 }
 
-export function PipelineCanvas() {
+export function WorkflowCanvas() {
   return (
     <ReactFlowProvider>
-      <PipelineCanvasInner />
+      <WorkflowCanvasInner />
     </ReactFlowProvider>
   );
 }
+
+export const PipelineCanvas = WorkflowCanvas;

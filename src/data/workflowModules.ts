@@ -1,8 +1,8 @@
-import type { ModuleDefinition, ModuleId, Receipt } from "../types/pipeline";
+import type { ModuleDefinition, ModuleId, Receipt } from "../types/workflow";
 
 const CATEGORY_KEYWORDS: Array<{ keywords: string[]; category: string }> = [
   { keywords: ["fuel", "diesel", "petrol", "unleaded", "gasoline", "gas", "bp", "shell", "ampol"], category: "Fuel" },
-  { keywords: ["cafe", "coffee", "lunch", "dinner", "breakfast", "meal", "restaurant", "food", "pizza", "sushi", "sandwich", "burger", "chicken", "beef", "pork", "meat", "sausage", "spinach", "kefir", "yogurt", "cheese", "milk", "bread", "pasta", "fettuccine", "chocolate", "snack", "crisps", "water", "juice", "sparkling", "mince", "cream", "butter", "eggs", "salad", "fruit", "vegetable", "potato", "rice", "sauce", "soup", "bottle", "fresh", "organic", "deli", "bakery", "tortilla", "wrap", "noodle", "rice", "ham", "turkey", "bacon", "salami", "muffin", "cake", "cookie", "biscuit", "cereal", "oat", "honey", "jam", "peanut", "almond", "cashew", "walnut", "raisin", "coconut", "avocado", "lemon", "lime", "apple", "banana", "orange", "grape", "berry", "mango", "pineapple", "kiwi", "melon", "peach", "pear", "plum", "corn", "bean", "lentil", "pea", "tofu", "olive", "pickle", "mushroom", "onion", "garlic", "ginger", "chilli", "pepper", "tomato", "cucumber", "lettuce", "cabbage", "broccoli", "cauliflower", "carrot", "celery", "zucchini", "eggplant", "pumpkin"], category: "Food" },
+  { keywords: ["cafe", "coffee", "lunch", "dinner", "breakfast", "meal", "restaurant", "food", "pizza", "sushi", "sandwich", "burger", "chicken", "beef", "pork", "meat", "sausage", "spinach", "kefir", "yogurt", "cheese", "milk", "bread", "pasta", "fettuccine", "chocolate", "snack", "crisps", "water", "juice", "sparkling", "mince", "cream", "butter", "eggs", "salad", "fruit", "vegetable", "potato", "rice", "sauce", "soup", "bottle", "fresh", "organic", "deli", "bakery", "tortilla", "wrap", "noodle", "ham", "turkey", "bacon", "salami", "muffin", "cake", "cookie", "biscuit", "cereal", "oat", "honey", "jam", "peanut", "almond", "cashew", "walnut", "raisin", "coconut", "avocado", "lemon", "lime", "apple", "banana", "orange", "grape", "berry", "mango", "pineapple", "kiwi", "melon", "peach", "pear", "plum", "corn", "bean", "lentil", "pea", "tofu", "olive", "pickle", "mushroom", "onion", "garlic", "ginger", "chilli", "pepper", "tomato", "cucumber", "lettuce", "cabbage", "broccoli", "cauliflower", "carrot", "celery", "zucchini", "eggplant", "pumpkin"], category: "Food" },
   { keywords: ["taxi", "uber", "lyft", "train", "bus", "tram", "parking", "toll", "metro", "flight", "airport", "airfare", "ticket", "shuttle", "ferry", "cab", "transit", "fare"], category: "Transport" },
   { keywords: ["hotel", "motel", "lodging", "accommodation", "airbnb", "stay", "inn", "resort", "hostel", "booking.com", "expedia"], category: "Accommodation" },
   { keywords: ["course", "workshop", "seminar", "conference", "training", "tuition"], category: "Training" },
@@ -13,7 +13,14 @@ const CATEGORY_KEYWORDS: Array<{ keywords: string[]; category: string }> = [
 export function inferCategory(description: string): string {
   const lower = description.toLowerCase();
   for (const { keywords, category } of CATEGORY_KEYWORDS) {
-    if (keywords.some((k) => lower.includes(k))) return category;
+    if (keywords.some((k) => {
+      // Short keywords (<=4 chars) require word boundary check to avoid partial word matches like "cab" in "cable"
+      if (k.length <= 4) {
+        const regex = new RegExp(`\\b${k}\\b`, "i");
+        return regex.test(lower);
+      }
+      return lower.includes(k);
+    })) return category;
   }
   return "Other";
 }
@@ -27,6 +34,9 @@ const MERCHANT_POOL: Array<{
   cardFee: number;
   changeAmount?: number;
   paidByCard?: number;
+  country?: string;
+  abn?: string;
+  currency?: string;
 }> = [
   {
     merchant: "Ampol Fuel & Go",
@@ -136,6 +146,49 @@ const MERCHANT_POOL: Array<{
     changeAmount: 20.0,
     paidByCard: 7.30,
   },
+  {
+    merchant: "DigitalOcean LLC",
+    date: "2026-07-24",
+    lineItems: [
+      { description: "Production droplet — 8 vCPU / 16GB (monthly)", amount: 96.0, category: "Equipment" },
+      { description: "Block storage 200GB", amount: 20.0, category: "Equipment" },
+      { description: "Bandwidth overage", amount: 4.5, category: "Equipment" },
+    ],
+    cashOut: false,
+    loyalty: 0,
+    cardFee: 2.41,
+    country: "US",
+    abn: undefined,
+    currency: "USD",
+  },
+  {
+    merchant: "AWS — Amazon Web Services",
+    date: "2026-07-25",
+    lineItems: [
+      { description: "EC2 m5.large × 720h", amount: 70.56, category: "Equipment" },
+      { description: "RDS db.t3.medium × 720h", amount: 48.24, category: "Equipment" },
+      { description: "S3 storage 1.2TB", amount: 26.4, category: "Equipment" },
+    ],
+    cashOut: false,
+    loyalty: 0,
+    cardFee: 0.0,
+    country: "US",
+    abn: undefined,
+    currency: "USD",
+  },
+  {
+    merchant: "GitHub Inc.",
+    date: "2026-07-26",
+    lineItems: [
+      { description: "Team plan — 12 seats × monthly", amount: 48.0, category: "Office" },
+    ],
+    cashOut: false,
+    loyalty: 0,
+    cardFee: 0.96,
+    country: "US",
+    abn: undefined,
+    currency: "USD",
+  },
 ];
 
 let poolCounter = 0;
@@ -166,7 +219,7 @@ export function makeReceiptFromTemplate(
   id: string,
   imageDataUrl?: string,
 ): Receipt {
-    const t = pickReceiptTemplate(filename);
+  const t = pickReceiptTemplate(filename);
   const subtotal = t.lineItems.reduce((acc, li) => acc + li.amount, 0);
   const total = +(subtotal + t.cardFee).toFixed(2);
   const netGoods = t.changeAmount !== undefined
@@ -194,6 +247,9 @@ export function makeReceiptFromTemplate(
     netGoodsAmount: netGoods,
     changeAmount: t.changeAmount ?? 0,
     paidByCard: t.paidByCard ?? 0,
+    country: t.country ?? "AU",
+    abn: t.abn,
+    currency: t.currency ?? "AUD",
   };
 }
 
@@ -212,7 +268,7 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
         kind: "select",
         options: ["Currently selected receipt", "All uploaded receipts"],
         defaultValue: "Currently selected receipt",
-        help: "Choose which receipts feed the chain.",
+        help: "Choose which receipts feed the workflow.",
       },
     ],
     inputs: 0,
@@ -287,6 +343,51 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     inputs: 1,
     outputs: 1,
   },
+  "validation.abn": {
+    id: "validation.abn",
+    type: "validation",
+    label: "ABN / Foreign Supplier",
+    shortLabel: "ABN Check",
+    description: "Flags overseas suppliers and missing Australian Business Numbers. Use before posting foreign-card payments like US cloud servers.",
+    defaultParams: {
+      requireAbn: true,
+      requireAustralian: true,
+      abnRequiredAbove: 82.5,
+      action: "flag",
+    },
+    paramSchema: [
+      {
+        key: "requireAbn",
+        label: "Require ABN for AU suppliers",
+        kind: "boolean",
+        defaultValue: true,
+        help: "An ABN is legally required on AU tax invoices over the threshold below.",
+      },
+      {
+        key: "requireAustralian",
+        label: "Block non-AU suppliers",
+        kind: "boolean",
+        defaultValue: false,
+        help: "Trip a hard flag when the supplier is based overseas (e.g. AWS, GitHub).",
+      },
+      {
+        key: "abnRequiredAbove",
+        label: "ABN required above ($)",
+        kind: "number",
+        defaultValue: 82.5,
+        help: "ATO threshold for tax invoices (GST-inclusive total).",
+      },
+      {
+        key: "action",
+        label: "Action",
+        kind: "select",
+        options: ["flag", "block", "annotate"],
+        defaultValue: "flag",
+      },
+    ],
+    inputs: 1,
+    outputs: 1,
+  },
   "logic.ifthen": {
     id: "logic.ifthen",
     type: "logic",
@@ -300,6 +401,72 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
     ],
     inputs: 1,
     outputs: 2,
+  },
+  "logic.threshold": {
+    id: "logic.threshold",
+    type: "logic",
+    label: "Three-Way Amount Threshold",
+    shortLabel: "Amount Threshold",
+    description: "Rule 1: Input receipt total amount → Outputs 3 branches (Less than lower bound, Between lower and upper bound, Greater than upper bound).",
+    defaultParams: { field: "total", lowerBound: 25, upperBound: 250 },
+    paramSchema: [
+      {
+        key: "field",
+        label: "Numeric field",
+        kind: "text",
+        defaultValue: "total",
+        help: "e.g. total (receipt total amount), netGoodsAmount, cardFeeAmount",
+      },
+      {
+        key: "lowerBound",
+        label: "Lower bound ($)",
+        kind: "number",
+        defaultValue: 25,
+        help: "Output 1: Amounts less than this bound (< X).",
+      },
+      {
+        key: "upperBound",
+        label: "Upper bound ($)",
+        kind: "number",
+        defaultValue: 250,
+        help: "Output 3: Amounts greater than or equal to this bound (>= Y).",
+      },
+      {
+        key: "inclusive",
+        label: "Boundaries inclusive",
+        kind: "boolean",
+        defaultValue: true,
+        help: "When enabled, lower and upper bounds fall into the middle output channel (X..Y).",
+      },
+    ],
+    inputs: 1,
+    outputs: 3,
+  },
+  "logic.compliance_split": {
+    id: "logic.compliance_split",
+    type: "logic",
+    label: "Compliance Risk Splitter",
+    shortLabel: "Risk Level Split",
+    description: "Rule 2: Input compliance score % → Outputs 3 risk levels (Compliant Pass >= 80%, Review Warning 50-79%, Hard Block Fail < 50%).",
+    defaultParams: { warningThreshold: 80, criticalThreshold: 50 },
+    paramSchema: [
+      {
+        key: "warningThreshold",
+        label: "Warning threshold (%)",
+        kind: "number",
+        defaultValue: 80,
+        help: "Scores at or above this pass automatically (Compliant).",
+      },
+      {
+        key: "criticalThreshold",
+        label: "Critical threshold (%)",
+        kind: "number",
+        defaultValue: 50,
+        help: "Scores below this are hard blocked (Failed). Scores between critical and warning require manual review.",
+      },
+    ],
+    inputs: 1,
+    outputs: 3,
   },
   "logic.loop": {
     id: "logic.loop",

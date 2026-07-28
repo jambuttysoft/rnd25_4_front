@@ -1,9 +1,6 @@
 import { Link } from "react-router-dom";
-import { ModuleToolbox } from "./ModuleToolbox";
-import { PipelineCanvas } from "./PipelineCanvas";
-import { NodeConfigPanel } from "./NodeConfigPanel";
-import { TemplateManager } from "./TemplateManager";
-import { PipelineResultsPanel } from "./PipelineResultsPanel";
+import { UploadStep } from "./UploadStep";
+import { ReceiptDetail } from "./ReceiptDetail";
 import type { CSSProperties } from "react";
 
 const styles: Record<string, CSSProperties> = {
@@ -41,12 +38,11 @@ const styles: Record<string, CSSProperties> = {
     lineHeight: 1.6,
     maxWidth: 720,
   },
-  builderGrid: {
+  topGrid: {
     display: "grid",
-    gridTemplateColumns: "minmax(220px, 260px) minmax(0, 1fr) minmax(260px, 300px)",
-    gridAutoRows: "minmax(640px, auto)",
-    gap: "var(--space-5)",
-    alignItems: "stretch",
+    gridTemplateColumns: "minmax(0, 1.05fr) minmax(0, 1fr)",
+    gap: "var(--space-6)",
+    alignItems: "start",
   },
   nextStep: {
     display: "flex",
@@ -98,36 +94,32 @@ const styles: Record<string, CSSProperties> = {
   },
 };
 
-export function BuildPipelineTab() {
+export function UploadReceiptTab() {
   return (
     <div style={styles.wrap}>
       <div style={styles.intro}>
-        <span style={styles.eyebrow}>Step 02 — Compose &amp; Configure</span>
-        <h2 style={styles.title}>Build the pipeline</h2>
+        <span style={styles.eyebrow}>Step 01 — Upload &amp; Inspect</span>
+        <h2 style={styles.title}>Capture a receipt</h2>
         <p style={styles.lede}>
-          Drag modules from the toolbox onto the canvas, wire them together, and tune
-          the parameters of each node. Load a template below for a working baseline,
-          or assemble your own verification flow and save it for later.
+          Drop a receipt image or generate a sample. OCR runs through six progressive
+          stages — text region detection, entity extraction, line-item cross-check — and
+          saves the structured payload in browser memory. Select a receipt to feed into
+          the workflow.
         </p>
       </div>
 
-      <div style={styles.builderGrid}>
-        <ModuleToolbox />
-        <PipelineCanvas />
-        <NodeConfigPanel />
+      <div style={styles.topGrid}>
+        <UploadStep />
+        <ReceiptDetail />
       </div>
-
-      <PipelineResultsPanel />
-
-      <TemplateManager />
 
       <div style={styles.nextStep}>
         <div style={styles.nextStepText}>
           <span style={styles.nextStepLabel}>Next step</span>
-          <span style={styles.nextStepTitle}>Run the chain and view the expense map</span>
+          <span style={styles.nextStepTitle}>Build the verification workflow</span>
         </div>
-        <Link to="/map" style={styles.nextStepBtn}>
-          Continue to Map →
+        <Link to="/build" style={styles.nextStepBtn}>
+          Continue to Build →
         </Link>
       </div>
     </div>

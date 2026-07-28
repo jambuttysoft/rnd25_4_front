@@ -1,7 +1,7 @@
-import { usePipeline } from "../../state/PipelineContext";
+import { useWorkflow } from "../../state/WorkflowContext";
 import { StatusIndicator } from "../StatusIndicator";
 import { AU } from "../../utils/format";
-import { CATEGORY_COLOR_VARS, EXPENSE_CATEGORIES } from "../../types/pipeline";
+import { CATEGORY_COLOR_VARS, EXPENSE_CATEGORIES } from "../../types/workflow";
 import type { CSSProperties, ReactNode } from "react";
 
 const styles: Record<string, CSSProperties> = {
@@ -206,7 +206,7 @@ const styles: Record<string, CSSProperties> = {
 };
 
 export function ReceiptDetail() {
-  const { receipts, selectedReceipt, selectedReceiptId, selectReceipt } = usePipeline();
+  const { receipts, selectedReceipt, selectedReceiptId, selectReceipt } = useWorkflow();
 
   let cardContent: ReactNode = null;
 
@@ -379,7 +379,7 @@ export function ReceiptDetail() {
           <h3 style={styles.title}>Receipt detail</h3>
           <p style={styles.subtitle}>
             Browse every receipt in the in-memory store. Selecting one populates the
-            pipeline input node and any downstream validation.
+            workflow input node and any downstream validation.
           </p>
         </div>
         <select

@@ -2,21 +2,21 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from "react";
 import type { Node, Edge } from "@xyflow/react";
 import { applyNodeChanges, applyEdgeChanges, addEdge, type NodeChange, type EdgeChange, type Connection } from "@xyflow/react";
-import { makeReceiptFromTemplate, inferCategory } from "../data/pipelineModules";
-import { executeChain } from "../utils/pipeline/execute";
+import { makeReceiptFromTemplate, inferCategory } from "../data/workflowModules";
+import { executeChain } from "../utils/workflow/execute";
 import type {
   JournalEntry,
-  PipelineResult,
-  PipelineNodeData,
-  PipelineTemplate,
+  WorkflowResult,
+  WorkflowNodeData,
+  WorkflowTemplate,
   Receipt,
-} from "../types/pipeline";
-import type { ChainNode, ChainEdge } from "../utils/pipeline/execute";
-import { runPipeline, ocrReceipt, healthCheck } from "../services/api";
+} from "../types/workflow";
+import type { ChainNode, ChainEdge } from "../utils/workflow/execute";
+import { runPipeline as runWorkflowApi, ocrReceipt, healthCheck } from "../services/api";
 
-const USER_TEMPLATES_STORAGE_KEY = "pipeline-user-templates";
+const USER_TEMPLATES_STORAGE_KEY = "workflow-user-templates";
 
-const BUILT_IN_TEMPLATES: PipelineTemplate[] = [
+const BUILT_IN_TEMPLATES: WorkflowTemplate[] = [
   {
     id: "tpl-builtin-full-audit",
     name: "Full Audit",
@@ -87,6 +87,74 @@ const BUILT_IN_TEMPLATES: PipelineTemplate[] = [
     ],
   },
   {
+    id: "tpl-builtin-three-way-rules",
+    name: "3-Way Logical Rules",
+    description:
+      "Workflow showcasing two 3-way logical rules: Amount Triage (< $25, $25-$250, > $250) and Compliance Risk Splitter (Pass, Review, Block).",
+    isBuiltIn: true,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+    nodes: [
+      {
+        id: "n-input",
+        moduleId: "input.receipt",
+        label: "Receipt",
+        params: {},
+        position: { x: 60, y: 40 },
+      },
+      {
+        id: "n-threshold",
+        moduleId: "logic.threshold",
+        label: "1. Amount Triage (3-Way)",
+        params: { field: "total", lowerBound: 25, upperBound: 250, inclusive: true },
+        position: { x: 60, y: 160 },
+      },
+      {
+        id: "n-policy",
+        moduleId: "validation.policy",
+        label: "Policy Check",
+        params: { maxMeal: 35, maxHotelNight: 250, maxFuelLitres: 60, requireReceiptAbove: 25 },
+        position: { x: 360, y: 160 },
+      },
+      {
+        id: "n-risk",
+        moduleId: "logic.compliance_split",
+        label: "2. Compliance Risk Split",
+        params: { warningThreshold: 80, criticalThreshold: 50 },
+        position: { x: 360, y: 280 },
+      },
+      {
+        id: "n-categorize",
+        moduleId: "validation.categorize",
+        label: "Categorize",
+        params: { fallback: "Other" },
+        position: { x: 60, y: 280 },
+      },
+      {
+        id: "n-aggregator",
+        moduleId: "logic.aggregator",
+        label: "Aggregate",
+        params: { groupBy: "category" },
+        position: { x: 60, y: 400 },
+      },
+      {
+        id: "n-expenseMap",
+        moduleId: "output.expenseMap",
+        label: "Expense Map",
+        params: { format: "treemap" },
+        position: { x: 60, y: 520 },
+      },
+    ],
+    edges: [
+      { source: "n-input", target: "n-threshold" },
+      { source: "n-threshold", target: "n-categorize" },
+      { source: "n-categorize", target: "n-policy" },
+      { source: "n-policy", target: "n-risk" },
+      { source: "n-categorize", target: "n-aggregator" },
+      { source: "n-aggregator", target: "n-expenseMap" },
+    ],
+  },
+  {
     id: "tpl-builtin-quick-categorize",
     name: "Quick Categorize",
     description:
@@ -130,61 +198,9 @@ const BUILT_IN_TEMPLATES: PipelineTemplate[] = [
       { source: "n-aggregator", target: "n-expenseMap" },
     ],
   },
-  {
-    id: "tpl-builtin-policy-compliance",
-    name: "Policy Compliance Check",
-    description:
-      "Audit expenses against company policy: categorise, validate limits, flag violations.",
-    isBuiltIn: true,
-    createdAt: "2026-01-01T00:00:00.000Z",
-    updatedAt: "2026-01-01T00:00:00.000Z",
-    nodes: [
-      {
-        id: "n-input",
-        moduleId: "input.receipt",
-        label: "Receipt",
-        params: {},
-        position: { x: 60, y: 40 },
-      },
-      {
-        id: "n-categorize",
-        moduleId: "validation.categorize",
-        label: "Categorize",
-        params: { fallback: "Other" },
-        position: { x: 60, y: 160 },
-      },
-      {
-        id: "n-policy",
-        moduleId: "validation.policy",
-        label: "Policy",
-        params: { maxMeal: 35, maxHotelNight: 250, maxFuelLitres: 60, requireReceiptAbove: 25 },
-        position: { x: 60, y: 280 },
-      },
-      {
-        id: "n-aggregator",
-        moduleId: "logic.aggregator",
-        label: "Aggregate",
-        params: { groupBy: "category" },
-        position: { x: 60, y: 400 },
-      },
-      {
-        id: "n-expenseMap",
-        moduleId: "output.expenseMap",
-        label: "Expense Map",
-        params: { format: "treemap" },
-        position: { x: 60, y: 520 },
-      },
-    ],
-    edges: [
-      { source: "n-input", target: "n-categorize" },
-      { source: "n-categorize", target: "n-policy" },
-      { source: "n-policy", target: "n-aggregator" },
-      { source: "n-aggregator", target: "n-expenseMap" },
-    ],
-  },
 ];
 
-function loadUserTemplatesFromStorage(): PipelineTemplate[] {
+function loadUserTemplatesFromStorage(): WorkflowTemplate[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(USER_TEMPLATES_STORAGE_KEY);
@@ -192,7 +208,7 @@ function loadUserTemplatesFromStorage(): PipelineTemplate[] {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
     return parsed.filter(
-      (t): t is PipelineTemplate =>
+      (t): t is WorkflowTemplate =>
         t &&
         typeof t === "object" &&
         typeof t.id === "string" &&
@@ -205,7 +221,7 @@ function loadUserTemplatesFromStorage(): PipelineTemplate[] {
   }
 }
 
-function saveUserTemplatesToStorage(templates: PipelineTemplate[]): void {
+function saveUserTemplatesToStorage(templates: WorkflowTemplate[]): void {
   if (typeof window === "undefined") return;
   try {
     const userOnly = templates.filter((t) => !t.isBuiltIn);
@@ -214,20 +230,20 @@ function saveUserTemplatesToStorage(templates: PipelineTemplate[]): void {
       JSON.stringify(userOnly),
     );
   } catch {
-    // localStorage may be unavailable (quota, privacy mode); silently no-op.
+    // localStorage may be unavailable
   }
 }
 
-interface PipelineContextValue {
+export interface WorkflowContextValue {
   receipts: Receipt[];
   selectedReceiptId: string | null;
   selectedReceipt: Receipt | null;
-  nodes: Node<PipelineNodeData>[];
+  nodes: Node<WorkflowNodeData>[];
   edges: Edge[];
   selectedNodeId: string | null;
-  lastResult: PipelineResult | null;
+  lastResult: WorkflowResult | null;
   isExecuting: boolean;
-  templates: PipelineTemplate[];
+  templates: WorkflowTemplate[];
   uploadReceipt: (filename: string, imageDataUrl?: string) => Promise<string>;
   selectReceipt: (id: string | null) => void;
   updateReceipt: (id: string, patch: Partial<Receipt>) => void;
@@ -254,25 +270,27 @@ interface PipelineContextValue {
   developmentMode: boolean;
 }
 
-const PipelineContext = createContext<PipelineContextValue | null>(null);
+export type PipelineContextValue = WorkflowContextValue;
+
+const WorkflowContext = createContext<WorkflowContextValue | null>(null);
 
 let receiptSeq = 1;
 let nodeSeq = 1;
 
-const PIPELINE_NODE_PREFIX = "pn-";
+const WORKFLOW_NODE_PREFIX = "wn-";
 
-export function PipelineProvider({ children }: { children: ReactNode }) {
+export function WorkflowProvider({ children }: { children: ReactNode }) {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(null);
-  const [nodes, setNodes] = useState<Node<PipelineNodeData>[]>([]);
+  const [nodes, setNodes] = useState<Node<WorkflowNodeData>[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [lastResult, setLastResult] = useState<PipelineResult | null>(null);
+  const [lastResult, setLastResult] = useState<WorkflowResult | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
   const [complianceThreshold, setComplianceThreshold] = useState(80);
   const [lastJournalEntry, setLastJournalEntry] = useState<JournalEntry | null>(null);
-  const [templates, setTemplates] = useState<PipelineTemplate[]>(BUILT_IN_TEMPLATES);
-  const [developmentMode, setDevelopmentMode] = useState(true); // default: dev mode
+  const [templates, setTemplates] = useState<WorkflowTemplate[]>(BUILT_IN_TEMPLATES);
+  const [developmentMode, setDevelopmentMode] = useState(true);
   const receiptIdRef = useRef(0);
   const nodeIdRef = useRef(0);
 
@@ -281,17 +299,15 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
     if (userTemplates.length > 0) {
       setTemplates((prev) => [...prev, ...userTemplates]);
     }
-    // Check development mode from backend
     healthCheck()
-      .then(data => setDevelopmentMode(data.development !== false))
-      .catch(() => setDevelopmentMode(true)); // backend down → assume dev mode
+      .then((data) => setDevelopmentMode(data.development !== false))
+      .catch(() => setDevelopmentMode(true));
   }, []);
 
   const uploadReceipt = useCallback(async (filename: string, imageDataUrl?: string) => {
     const id = `rcp-${String(receiptSeq++).padStart(4, "0")}`;
     receiptIdRef.current += 1;
 
-    // Create placeholder receipt immediately
     setReceipts((prev) => {
       const r = makeReceiptFromTemplate(filename, id, imageDataUrl);
       r.ocrStatus = "processing";
@@ -316,14 +332,12 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
       "Finalising structured output…",
     ];
 
-    // Try real OCR API if we have image data
     if (imageDataUrl) {
       try {
         const base64 = imageDataUrl.split(",")[1] ?? imageDataUrl;
         const data = await ocrReceipt(base64, filename);
         const apiReceipt = data.receipt;
 
-        // Patch the placeholder with real API data
         setReceipts((prev) =>
           prev.map((rcp) =>
             rcp.id === id
@@ -354,21 +368,18 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         console.warn("[OCR] API call failed", err);
         if (!developmentMode) {
-          // Production mode — show error, no simulation
           setReceipts((prev) =>
             prev.map((rcp) =>
               rcp.id === id
-                ? { ...rcp, ocrStatus: "error", ocrLog: [...steps, `Error: OpenRouter API unavailable`] }
+                ? { ...rcp, ocrStatus: "error", ocrLog: [...steps, `Error: API unavailable`] }
                 : rcp,
             ),
           );
           return id;
         }
-        // Development mode — fall back to simulated OCR
       }
     }
 
-    // For sample files (no imageDataUrl) OR fallback in dev mode:
     for (let i = 0; i < steps.length; i++) {
       await new Promise((r) => setTimeout(r, 200 + Math.random() * 150));
       setReceipts((prev) =>
@@ -401,7 +412,7 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      setNodes((nds) => applyNodeChanges(changes, nds) as Node<PipelineNodeData>[]);
+      setNodes((nds) => applyNodeChanges(changes, nds) as Node<WorkflowNodeData>[]);
     },
     [],
   );
@@ -427,7 +438,7 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addModuleNode = useCallback((moduleId: string, position: { x: number; y: number }) => {
-    const id = `${PIPELINE_NODE_PREFIX}${String(nodeSeq++).padStart(4, "0")}-${Date.now().toString(36).slice(-3)}`;
+    const id = `${WORKFLOW_NODE_PREFIX}${String(nodeSeq++).padStart(4, "0")}-${Date.now().toString(36).slice(-3)}`;
     nodeIdRef.current += 1;
     setNodes((nds) => [
       ...nds,
@@ -436,11 +447,11 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
         type: "module",
         position,
         data: {
-          moduleId: moduleId as PipelineNodeData["moduleId"],
+          moduleId: moduleId as WorkflowNodeData["moduleId"],
           label: "",
           params: {},
           status: "idle",
-        } as PipelineNodeData,
+        } as WorkflowNodeData,
       },
     ]);
   }, []);
@@ -500,18 +511,18 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
     };
 
     try {
-      const data = await runPipeline(selectedReceipt, complianceThreshold);
-      const result = data.result as PipelineResult;
+      const data = await runWorkflowApi(selectedReceipt, complianceThreshold);
+      const result = data.result as WorkflowResult;
       setLastResult(result);
       setLastJournalEntry(result.journalEntry ?? null);
       setNodes((nds) =>
         nds.map((n) => {
-          const summary = summarise(n, result);
+          const summary = summarise(n, result, selectedReceipt);
           return { ...n, data: { ...n.data, status: "success", resultSummary: summary } };
         }),
       );
     } catch {
-      console.warn("[Pipeline] Backend unavailable, using in-memory execution");
+      console.warn("[Workflow] Backend unavailable, using in-memory execution");
       const result = executeChain(chain, selectedReceipt);
       result.complianceSummary.threshold = complianceThreshold;
       result.complianceSummary.isCompliant =
@@ -520,7 +531,7 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
       setLastJournalEntry(result.journalEntry ?? null);
       setNodes((nds) =>
         nds.map((n) => {
-          const summary = summarise(n, result as PipelineResult);
+          const summary = summarise(n, result as WorkflowResult, selectedReceipt);
           return { ...n, data: { ...n.data, status: "success", resultSummary: summary } };
         }),
       );
@@ -536,33 +547,33 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const loadPresetChain = useCallback(() => {
-    if (nodes.length > 0 && !window.confirm("Replace the current chain with a preset?")) return;
-    const n1 = `${PIPELINE_NODE_PREFIX}preset-input`;
-    const n2 = `${PIPELINE_NODE_PREFIX}preset-cashout`;
-    const n3 = `${PIPELINE_NODE_PREFIX}preset-cat`;
-    const n4 = `${PIPELINE_NODE_PREFIX}preset-policy`;
-    const n5 = `${PIPELINE_NODE_PREFIX}preset-loop`;
-    const n6 = `${PIPELINE_NODE_PREFIX}preset-agg`;
-    const n7 = `${PIPELINE_NODE_PREFIX}preset-map`;
+    if (nodes.length > 0 && !window.confirm("Replace the current workflow with a preset?")) return;
+    const tpl = BUILT_IN_TEMPLATES[1]; // 3-Way Logical Rules template
+    const n1 = `${WORKFLOW_NODE_PREFIX}preset-input`;
+    const n2 = `${WORKFLOW_NODE_PREFIX}preset-threshold`;
+    const n3 = `${WORKFLOW_NODE_PREFIX}preset-cat`;
+    const n4 = `${WORKFLOW_NODE_PREFIX}preset-policy`;
+    const n5 = `${WORKFLOW_NODE_PREFIX}preset-risk`;
+    const n6 = `${WORKFLOW_NODE_PREFIX}preset-agg`;
+    const n7 = `${WORKFLOW_NODE_PREFIX}preset-map`;
     const x = 80;
     const y = 40;
     const dy = 130;
-    const preset: Node<PipelineNodeData>[] = [
+    const preset: Node<WorkflowNodeData>[] = [
       { id: n1, type: "module", position: { x, y: y + dy * 0 }, data: { moduleId: "input.receipt", label: "Receipt", params: {}, status: "idle" } },
-      { id: n2, type: "module", position: { x, y: y + dy * 1 }, data: { moduleId: "validation.cashout", label: "Cash-out", params: { threshold: 0, action: "flag" }, status: "idle" } },
+      { id: n2, type: "module", position: { x, y: y + dy * 1 }, data: { moduleId: "logic.threshold", label: "Amount Triage (3-Way)", params: { field: "total", lowerBound: 25, upperBound: 250 }, status: "idle" } },
       { id: n3, type: "module", position: { x, y: y + dy * 2 }, data: { moduleId: "validation.categorize", label: "Categorize", params: { fallback: "Other" }, status: "idle" } },
-      { id: n4, type: "module", position: { x: 360, y: y + dy * 1 }, data: { moduleId: "validation.policy", label: "Policy", params: { maxMeal: 35, maxHotelNight: 250, maxFuelLitres: 60, requireReceiptAbove: 25 }, status: "idle" } },
-      { id: n5, type: "module", position: { x, y: y + dy * 3 }, data: { moduleId: "logic.loop", label: "Loop", params: { over: "lineItems" }, status: "idle" } },
-      { id: n6, type: "module", position: { x, y: y + dy * 4 }, data: { moduleId: "logic.aggregator", label: "Aggregate", params: { groupBy: "category" }, status: "idle" } },
-      { id: n7, type: "module", position: { x, y: y + dy * 5 }, data: { moduleId: "output.expenseMap", label: "Expense Map", params: { format: "treemap" }, status: "idle" } },
+      { id: n4, type: "module", position: { x: 380, y: y + dy * 1 }, data: { moduleId: "validation.policy", label: "Policy", params: { maxMeal: 35, maxHotelNight: 250, maxFuelLitres: 60, requireReceiptAbove: 25 }, status: "idle" } },
+      { id: n5, type: "module", position: { x: 380, y: y + dy * 2 }, data: { moduleId: "logic.compliance_split", label: "Compliance Risk Split", params: { warningThreshold: 80, criticalThreshold: 50 }, status: "idle" } },
+      { id: n6, type: "module", position: { x, y: y + dy * 3 }, data: { moduleId: "logic.aggregator", label: "Aggregate", params: { groupBy: "category" }, status: "idle" } },
+      { id: n7, type: "module", position: { x, y: y + dy * 4 }, data: { moduleId: "output.expenseMap", label: "Expense Map", params: { format: "treemap" }, status: "idle" } },
     ];
     const presetEdges: Edge[] = [
       { id: "e1-2", source: n1, target: n2, animated: true, style: { stroke: "var(--color-ink-faint)", strokeWidth: 1.5 } },
       { id: "e2-3", source: n2, target: n3, animated: true, style: { stroke: "var(--color-ink-faint)", strokeWidth: 1.5 } },
       { id: "e3-4", source: n3, target: n4, animated: true, style: { stroke: "var(--color-ink-faint)", strokeWidth: 1.5 } },
-      { id: "e3-5", source: n3, target: n5, animated: true, style: { stroke: "var(--color-ink-faint)", strokeWidth: 1.5 } },
       { id: "e4-5", source: n4, target: n5, animated: true, style: { stroke: "var(--color-ink-faint)", strokeWidth: 1.5 } },
-      { id: "e5-6", source: n5, target: n6, animated: true, style: { stroke: "var(--color-ink-faint)", strokeWidth: 1.5 } },
+      { id: "e3-6", source: n3, target: n6, animated: true, style: { stroke: "var(--color-ink-faint)", strokeWidth: 1.5 } },
       { id: "e6-7", source: n6, target: n7, animated: true, style: { stroke: "var(--color-ink-faint)", strokeWidth: 1.5 } },
     ];
     setNodes(preset);
@@ -597,15 +608,11 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
     (name: string, description: string): string => {
       const trimmedName = name.trim();
       const trimmedDescription = description.trim();
-      if (!trimmedName) {
-        throw new Error("Template name is required.");
-      }
-      if (nodes.length === 0) {
-        throw new Error("Cannot save an empty pipeline as a template.");
-      }
+      if (!trimmedName) throw new Error("Template name is required.");
+      if (nodes.length === 0) throw new Error("Cannot save an empty workflow as a template.");
       const now = new Date().toISOString();
       const newId = `tpl-user-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-      const newTemplate: PipelineTemplate = {
+      const newTemplate: WorkflowTemplate = {
         id: newId,
         name: trimmedName,
         description: trimmedDescription,
@@ -642,15 +649,11 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
       if (!tpl) return;
       if (
         nodes.length > 0 &&
-        !window.confirm(
-          `Replace the current pipeline with "${tpl.name}"? Your unsaved changes will be lost.`,
-        )
-      ) {
-        return;
-      }
+        !window.confirm(`Replace the current workflow with "${tpl.name}"?`)
+      ) return;
       const idMap = new Map<string, string>();
-      const newNodes: Node<PipelineNodeData>[] = tpl.nodes.map((n) => {
-        const newId = `${PIPELINE_NODE_PREFIX}tpl-${Date.now().toString(36)}-${nodeSeq++}-${Math.random().toString(36).slice(2, 5)}`;
+      const newNodes: Node<WorkflowNodeData>[] = tpl.nodes.map((n) => {
+        const newId = `${WORKFLOW_NODE_PREFIX}tpl-${Date.now().toString(36)}-${nodeSeq++}-${Math.random().toString(36).slice(2, 5)}`;
         idMap.set(n.id, newId);
         return {
           id: newId,
@@ -661,7 +664,7 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
             label: n.label,
             params: { ...n.params },
             status: "idle",
-          } as PipelineNodeData,
+          } as WorkflowNodeData,
         };
       });
       const newEdges: Edge[] = tpl.edges
@@ -688,22 +691,17 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
     [templates, nodes.length],
   );
 
-  const renameTemplate = useCallback(
-    (id: string, newName: string) => {
-      const trimmed = newName.trim();
-      if (!trimmed) return;
-      setTemplates((prev) => {
-        const next = prev.map((t) =>
-          t.id === id && !t.isBuiltIn
-            ? { ...t, name: trimmed, updatedAt: new Date().toISOString() }
-            : t,
-        );
-        saveUserTemplatesToStorage(next);
-        return next;
-      });
-    },
-    [],
-  );
+  const renameTemplate = useCallback((id: string, newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    setTemplates((prev) => {
+      const next = prev.map((t) =>
+        t.id === id && !t.isBuiltIn ? { ...t, name: trimmed, updatedAt: new Date().toISOString() } : t,
+      );
+      saveUserTemplatesToStorage(next);
+      return next;
+    });
+  }, []);
 
   const deleteTemplate = useCallback((id: string) => {
     setTemplates((prev) => {
@@ -715,7 +713,7 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const value: PipelineContextValue = {
+  const value: WorkflowContextValue = {
     receipts,
     selectedReceiptId,
     selectedReceipt,
@@ -751,18 +749,22 @@ export function PipelineProvider({ children }: { children: ReactNode }) {
     exportJournalEntry,
   };
 
-  return <PipelineContext.Provider value={value}>{children}</PipelineContext.Provider>;
+  return <WorkflowContext.Provider value={value}>{children}</WorkflowContext.Provider>;
 }
 
-export function usePipeline(): PipelineContextValue {
-  const ctx = useContext(PipelineContext);
-  if (!ctx) throw new Error("usePipeline must be used within PipelineProvider");
+export function useWorkflow(): WorkflowContextValue {
+  const ctx = useContext(WorkflowContext);
+  if (!ctx) throw new Error("useWorkflow must be used within WorkflowProvider");
   return ctx;
 }
 
+export const PipelineProvider = WorkflowProvider;
+export const usePipeline = useWorkflow;
+
 function summarise(
-  n: Node<PipelineNodeData>,
-  result: PipelineResult,
+  n: Node<WorkflowNodeData>,
+  result: WorkflowResult,
+  selectedReceipt: Receipt | null,
 ): string {
   switch (n.data.moduleId) {
     case "input.receipt":
@@ -777,8 +779,24 @@ function summarise(
       return `${result.byCategory.length} categories`;
     case "validation.policy":
       return result.policyFlags.length === 0 ? "Compliant" : `${result.policyFlags.length} flags`;
+    case "validation.abn": {
+      const country = (selectedReceipt?.country ?? "AU").toUpperCase();
+      if (country !== "AU") return `${country} — flagged`;
+      return selectedReceipt?.abn ? "ABN ok" : "ABN missing";
+    }
     case "logic.ifthen":
       return result.cashOutDetected ? "→ cash-out" : "→ normal";
+    case "logic.threshold": {
+      const value = n.data.params;
+      const lower = Number(value.lowerBound ?? 25);
+      const upper = Number(value.upperBound ?? 250);
+      return `<$${lower} · $${lower}–$${upper} · ≥$${upper}`;
+    }
+    case "logic.compliance_split": {
+      const warn = Number(n.data.params.warningThreshold ?? 80);
+      const crit = Number(n.data.params.criticalThreshold ?? 50);
+      return `Pass ≥${warn}% · Rev ${crit}-${warn-1}% · Fail <${crit}%`;
+    }
     case "logic.loop":
       return `× ${result.totalItems}`;
     case "logic.aggregator":
